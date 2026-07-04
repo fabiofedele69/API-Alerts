@@ -1,0 +1,12 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+
+    "python.defaultInterpreterPath": "C:\\Users\\dring\\miniconda3\\envs\\alerts-api\\python.exe",
+
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}"
+    ],
+
+    "python.analysis.typeCheckingMode": "basic"
+}
