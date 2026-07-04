@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Alerts Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f4f6f8;
+        }
+
+        h1 {
+            color: #1f2937;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        input, select, button {
+            padding: 8px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        a.button {
+            background: #6b7280;
+            color: white;
+            padding: 9px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        a.excel {
+            background: #059669;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #1f2937;
+            color: white;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .message {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Alerts Dashboard</h1>
+
+<div class="card">
+    <form method="get" action="/ui/">
+        <input type="hidden" name="search" value="true">
+
+        <label>Status:</label>
+        <select name="status">
+            <option value="">All</option>
+            <option value="OPEN" {% if status == "OPEN" %}selected{% endif %}>OPEN</option>
+            <option value="CLOSED" {% if status == "CLOSED" %}selected{% endif %}>CLOSED</option>
+            <option value="IN_REVIEW" {% if status == "IN_REVIEW" %}selected{% endif %}>IN_REVIEW</option>
+        </select>
+
+        <label>Alert Type:</label>
+        <select name="alert_type">
+            <option value="">All</option>
+            <option value="AML" {% if alert_type == "AML" %}selected{% endif %}>AML</option>
+            <option value="FRAUD" {% if alert_type == "FRAUD" %}selected{% endif %}>FRAUD</option>
+            <option value="SANCTIONS" {% if alert_type == "SANCTIONS" %}selected{% endif %}>SANCTIONS</option>
+            <option value="STRUCTURING" {% if alert_type == "STRUCTURING" %}selected{% endif %}>STRUCTURING</option>
+        </select>
+
+        <br>
+
+        <label>Alert ID:</label>
+        <input type="text" name="alert_id" value="{{ alert_id }}">
+
+        <label>Customer ID:</label>
+        <input type="text" name="customer_id" value="{{ customer_id }}">
+
+        <br>
+
+        <button type="submit">Search</button>
+        <a class="button" href="/ui/">Clear</a>
+        <a class="button excel" href="/reports/alerts/excel">Download Excel</a>
+    </form>
+</div>
+
+{% if search != "true" %}
+    <div class="message">
+        No data displayed. Please enter search criteria and click <b>Search</b>.
+    </div>
+{% elif count == 0 %}
+    <div class="message">
+        No alerts found for the selected criteria.
+    </div>
+{% else %}
+    <p><b>{{ count }}</b> alert(s) found.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Alert ID</th>
+                <th>Status</th>
+                <th>Type</th>
+                <th>Created Date</th>
+                <th>Customer ID</th>
+                <th>Customer Name</th>
+                <th>Risk Score</th>
+                <th>Amount</th>
+                <th>Currency</th>
+                <th>Country</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alert in alerts %}
+            <tr>
+                <td>{{ alert.alert_id }}</td>
+                <td>{{ alert.alert_status }}</td>
+                <td>{{ alert.alert_type }}</td>
+                <td>{{ alert.created_date }}</td>
+                <td>{{ alert.customer_id }}</td>
+                <td>{{ alert.customer_name }}</td>
+                <td>{{ alert.risk_score }}</td>
+                <td>{{ alert.amount }}</td>
+                <td>{{ alert.currency }}</td>
+                <td>{{ alert.country }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+</body>
+</html>
