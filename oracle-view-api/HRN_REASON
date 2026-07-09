@@ -1,0 +1,29 @@
+TRIM(
+    REGEXP_REPLACE(
+        REPLACE(
+            REPLACE(
+                REPLACE(
+                    REPLACE(
+                        REPLACE(
+                            REGEXP_REPLACE(
+                                REPLACE(
+                                    REPLACE(AC.CS11,'&lt;','<'),
+                                    '&gt;','>'
+                                ),
+                                '<[^>]+>',
+                                ''
+                            ),
+                            '&nbsp;',' '
+                        ),
+                        '&#160;',' '
+                    ),
+                    '&amp;','&'
+                ),
+                '&quot;','"'
+            ),
+            '&apos;',''''
+        ),
+        '[[:space:]]+',
+        ' '
+    )
+) AS hrn_reason
