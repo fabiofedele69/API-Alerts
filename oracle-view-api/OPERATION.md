@@ -1,109 +1,111 @@
-# API Operations
+# Oracle Reporter API
 
-## Activate the Python Environment
+## Overview
+
+Oracle Reporter API is a Python REST service that exposes the Oracle 19c view `LC_SCMT.VW_API_REPORTER`.
+
+The application is built using FastAPI and Uvicorn and initially runs only on `localhost`. Its primary purpose is to provide all records from the Oracle view in JSON format to an internal consumer application. A secondary endpoint is available to export the same data as an Excel file for evaluation and testing.
+
+## Features
+
+* Oracle Database 19c connectivity
+* FastAPI REST service
+* Uvicorn application server
+* GET endpoints
+* JSON output
+* Excel export for evaluation
+* Configuration through environment variables
+* Centralized logging
+* Read-only Oracle access
+
+## Project Structure
+
+```text
+oracle-view-api/
+│
+├── app/
+│   ├── main.py
+│   ├── db.py
+│   ├── config.py
+│   └── logger.py
+│
+├── logs/
+├── .env
+├── requirements.txt
+└── README.md
+```
+
+## Installation
+
+Create a virtual environment:
 
 ```bash
-cd oracle-view-api
-
+python3 -m venv venv
 source venv/bin/activate
 ```
 
----
+Install dependencies:
 
-# Start the API
+```bash
+pip install -r requirements.txt
+```
 
-Execute:
+Configure Oracle credentials in the `.env` file.
+
+## Start the API
 
 ```bash
 uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Expected output:
+## Endpoints
+
+### Health Check
+
+```
+GET /
+```
+
+### JSON Output
+
+```
+GET /api/reporter
+```
+
+Returns all rows from `LC_SCMT.VW_API_REPORTER` in JSON format.
+
+### Excel Output
+
+```
+GET /api/reporter/excel
+```
+
+Returns an Excel workbook containing all rows from the Oracle view. This endpoint is intended for evaluation and testing.
+
+## Logging
+
+Application logs are written to:
 
 ```text
-INFO:     Started server process
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://127.0.0.1:8000
+logs/reporter_api.log
 ```
 
-The API is now available.
+The application logs:
 
----
+* Startup and shutdown
+* Incoming API requests
+* Oracle connection events
+* Query execution
+* Number of returned rows
+* Excel generation
+* Errors and exceptions
 
-# Verify the API
+## Security
 
-Application status:
+Current version:
 
-```bash
-curl http://127.0.0.1:8000/
-```
+* Localhost only (`127.0.0.1`)
+* Read-only Oracle account
+* Configuration through environment variables
 
-Retrieve all records from the Oracle view in JSON format:
-
-```bash
-curl http://127.0.0.1:8000/api/reporter
-```
-
-Retrieve the evaluation Excel file:
-
-```bash
-curl -o vw_api_reporter.xlsx \
-http://127.0.0.1:8000/api/reporter/excel
-```
-
----
-
-# Stop the API
-
-Press:
-
-```text
-CTRL + C
-```
-
-The Uvicorn server terminates gracefully.
-
----
-
-# Restart the API
-
-If the server has been stopped:
-
-```bash
-source venv/bin/activate
-
-uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
----
-
-# Check Whether the API Is Running
-
-```bash
-ps -ef | grep uvicorn
-```
-
-or
-
-```bash
-curl http://127.0.0.1:8000/
-```
-
-If the API is running correctly, it returns:
-
-```json
-{
-  "application": "Oracle Reporter API",
-  "status": "running"
-}
-```
-
----
-
-# Development Notes
-
-* The API runs locally on `127.0.0.1`.
-* The main endpoint `/api/reporter` returns all rows from `LC_SCMT.VW_API_REPORTER` in JSON format.
-* The endpoint `/api/reporter/excel` is intended only for evaluation and exports the same data in Microsoft Excel format.
-* During this development phase, the API is started manually using Uvicorn. In the deployment phase, it will be managed as a `systemd` service and packaged for automated deployment using Ansible.
+Future versions will include HTTPS, authentication, packaging as an RPM, `systemd` integration, and deployment through Ansible.
