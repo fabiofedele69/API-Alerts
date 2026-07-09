@@ -1,11 +1,16 @@
 import oracledb
+
 from app.config import settings
+from app.logger import logger
 
 
 def get_connection():
+
+    logger.info("Opening Oracle connection")
+
     dsn = oracledb.makedsn(
-        host=settings.ORACLE_HOST,
-        port=int(settings.ORACLE_PORT),
+        settings.ORACLE_HOST,
+        int(settings.ORACLE_PORT),
         service_name=settings.ORACLE_SERVICE
     )
 
@@ -15,39 +20,54 @@ def get_connection():
         dsn=dsn
     )
 
+    logger.info("Oracle connection established")
+
     return connection
 
 
 def fetch_reporter_data():
+
     sql = """
-        SELECT
-            FIELD_01,
-            FIELD_02,
-            FIELD_03,
-            FIELD_04,
-            FIELD_05,
-            FIELD_06,
-            FIELD_07,
-            FIELD_08,
-            FIELD_09,
-            FIELD_10
-        FROM LC_SCMT.VW_API_REPORTER
+    SELECT
+        FIELD_01,
+        FIELD_02,
+        FIELD_03,
+        FIELD_04,
+        FIELD_05,
+        FIELD_06,
+        FIELD_07,
+        FIELD_08,
+        FIELD_09,
+        FIELD_10
+    FROM LC_SCMT.VW_API_REPORTER
     """
 
     connection = get_connection()
 
     try:
+
         cursor = connection.cursor()
+
+        logger.info("Executing Oracle query")
+
         cursor.execute(sql)
 
-        columns = [col[0] for col in cursor.description]
+        columns = [column[0] for column in cursor.description]
 
-        result = []
-        for row in cursor.fetchall():
-            result.append(dict(zip(columns, row)))
+        rows = cursor.fetchall()
+
+        result = [
+            dict(zip(columns, row))
+            for row in rows
+        ]
+
+        logger.info("Returned %s rows", len(result))
 
         return result
 
     finally:
+
         cursor.close()
         connection.close()
+
+        logger.info("Oracle connection closed")
