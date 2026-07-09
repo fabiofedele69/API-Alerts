@@ -1,0 +1,80 @@
+WITH base_data AS (
+    SELECT
+        AC.CSN26 AS party_id,
+        AC.CS16  AS work_item_id,
+        AC.CSN18 AS legal_entity_type,
+        AC.CSN19 AS legal_entity_name,
+        AC.EXT_S7 AS hrn_category,
+
+        REGEXP_REPLACE(
+            REPLACE(
+                REPLACE(AC.CS11, '&lt;', '<'),
+                '&gt;', '>'
+            ),
+            '<[^>]+>',
+            ''
+        ) AS hrn_reason,
+
+        AC.CS19 AS first_name,
+        A.PA5   AS last_name,
+        AC.CSN13 AS country_of_incorporation
+
+    FROM LC_RCM_INC.ALERTS A
+    LEFT JOIN LC_RCM_INC.ACM_ALERT_CUSTOM_ATTRIBUTES AC
+        ON A.ALERT_CUSTOM_ATTRIBUTES_ID = AC.ALERT_CUSTOM_ATTRIBUTES_ID
+    WHERE AC.CS16 LIKE 'cpx_20260430_00001%_pa'
+      AND AC.EXT_S7 IS NOT NULL
+),
+
+rel_ranked AS (
+    SELECT
+        WORK_ITEM_ID,
+        RELATIONSHIP_TYPE,
+        RELATED_HRN_PROFILE,
+        ROW_NUMBER() OVER (
+            PARTITION BY WORK_ITEM_ID
+            ORDER BY RELATIONSHIP_TYPE, RELATED_HRN_PROFILE
+        ) AS rn
+    FROM LC_SCMT.PARTNER_CH_RELATIONSHIP_TYPE_TO_HRN_PROFILE
+),
+
+rel_pivot AS (
+    SELECT
+        WORK_ITEM_ID,
+
+        MAX(CASE WHEN rn = 1 THEN RELATIONSHIP_TYPE END)     AS hrn1_type1,
+        MAX(CASE WHEN rn = 1 THEN RELATED_HRN_PROFILE END)   AS hrn1_rel1,
+
+        MAX(CASE WHEN rn = 2 THEN RELATIONSHIP_TYPE END)     AS hrn2_type2,
+        MAX(CASE WHEN rn = 2 THEN RELATED_HRN_PROFILE END)   AS hrn2_rel2,
+
+        MAX(CASE WHEN rn = 3 THEN RELATIONSHIP_TYPE END)     AS hrn3_type3,
+        MAX(CASE WHEN rn = 3 THEN RELATED_HRN_PROFILE END)   AS hrn3_rel3,
+
+        MAX(CASE WHEN rn = 4 THEN RELATIONSHIP_TYPE END)     AS hrn4_type4,
+        MAX(CASE WHEN rn = 4 THEN RELATED_HRN_PROFILE END)   AS hrn4_rel4,
+
+        MAX(CASE WHEN rn = 5 THEN RELATIONSHIP_TYPE END)     AS hrn5_type5,
+        MAX(CASE WHEN rn = 5 THEN RELATED_HRN_PROFILE END)   AS hrn5_rel5
+
+    FROM rel_ranked
+    WHERE rn <= 5
+    GROUP BY WORK_ITEM_ID
+)
+
+SELECT
+    b.*,
+    r.hrn1_type1,
+    r.hrn1_rel1,
+    r.hrn2_type2,
+    r.hrn2_rel2,
+    r.hrn3_type3,
+    r.hrn3_rel3,
+    r.hrn4_type4,
+    r.hrn4_rel4,
+    r.hrn5_type5,
+    r.hrn5_rel5
+FROM base_data b
+LEFT JOIN rel_pivot r
+    ON b.work_item_id = r.work_item_id
+ORDER BY b.work_item_id;
