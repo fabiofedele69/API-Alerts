@@ -78,3 +78,122 @@ FROM base_data b
 LEFT JOIN rel_pivot r
     ON b.work_item_id = r.work_item_id
 ORDER BY b.work_item_id;
+
+
+
+
+WITH case_filter AS (
+    SELECT
+        A.ALERT_ID
+    FROM LC_RCM_INC.ALERTS A
+    LEFT JOIN LC_RCM_INC.ACM_USERS U
+        ON A.OWNER_INTERNAL_ID = U.USER_INTERNAL_ID
+    WHERE A.ALERT_TYPE_INTERNAL_ID IN (
+        SELECT ALERT_TYPE_INTERNAL_ID
+        FROM LC_RCM_INC.ACM_MD_ALERT_TYPES
+        WHERE NAME = 'SCMT Case'
+    )
+    AND A.BU_INTERNAL_ID IN (
+        SELECT BU_INTERNAL_ID
+        FROM LC_RCM_INC.ACM_MD_BUSINESS_UNITS
+        WHERE BU_IDENTIFIER IN (
+            'PFA UBS AG',
+            'KYC & IDD Competence Center',
+            'BAC Geneva',
+            'BAC Lugano',
+            'BAC Zurich',
+            'BAC Zurich CIC',
+            'BAC Zurich PB & WM CH',
+            'BRB/IB AML Compliance',
+            'C&ORC FIM',
+            'C&ORC GFO & CEEGI',
+            'WM EMEA, LATAM, APAC CH',
+            'CQUE UBS AG',
+            'PFA UBS Switzerland AG',
+            'CQUE UBS Switzerland AG'
+        )
+    )
+    AND A.DELETED = 0
+),
+
+base_data AS (
+    SELECT
+        AC.CSM26 AS party_id,
+        AC.CS16  AS work_item_id,
+        AC.CSM18 AS legal_entity_type,
+        AC.CSM19 AS legal_entity_name,
+        AC.EXT_S7 AS hrn_category,
+
+        REGEXP_REPLACE(
+            REPLACE(
+                REPLACE(AC.CS11, '&lt;', '<'),
+                '&gt;', '>'
+            ),
+            '<[^>]+>',
+            ''
+        ) AS hrn_reason,
+
+        AC.CS19 AS first_name,
+        A.P45   AS last_name,
+        AC.CSM13 AS country_of_incorporation
+
+    FROM LC_RCM_INC.ALERTS A
+    INNER JOIN case_filter CF
+        ON A.ALERT_ID = CF.ALERT_ID
+    LEFT JOIN LC_RCM_INC.ACM_ALERT_CUSTOM_ATTRIBUTES AC
+        ON A.ALERT_CUSTOM_ATTRIBUTES_ID = AC.ALERT_CUSTOM_ATTRIBUTES_ID
+    WHERE AC.EXT_S7 IS NOT NULL
+),
+
+rel_ranked AS (
+    SELECT
+        WORK_ITEM_ID,
+        RELATIONSHIP_TYPE,
+        RELATED_HRN_PROFILE,
+        ROW_NUMBER() OVER (
+            PARTITION BY WORK_ITEM_ID
+            ORDER BY RELATIONSHIP_TYPE, RELATED_HRN_PROFILE
+        ) AS rn
+    FROM LC_SCMT.PARTNER_CH_RELATIONSHIP_TYPE_TO_HRN_PROFILE
+),
+
+rel_pivot AS (
+    SELECT
+        WORK_ITEM_ID,
+
+        MAX(CASE WHEN rn = 1 THEN RELATIONSHIP_TYPE END)     AS hrn1_type1,
+        MAX(CASE WHEN rn = 1 THEN RELATED_HRN_PROFILE END)   AS hrn1_rel1,
+
+        MAX(CASE WHEN rn = 2 THEN RELATIONSHIP_TYPE END)     AS hrn2_type2,
+        MAX(CASE WHEN rn = 2 THEN RELATED_HRN_PROFILE END)   AS hrn2_rel2,
+
+        MAX(CASE WHEN rn = 3 THEN RELATIONSHIP_TYPE END)     AS hrn3_type3,
+        MAX(CASE WHEN rn = 3 THEN RELATED_HRN_PROFILE END)   AS hrn3_rel3,
+
+        MAX(CASE WHEN rn = 4 THEN RELATIONSHIP_TYPE END)     AS hrn4_type4,
+        MAX(CASE WHEN rn = 4 THEN RELATED_HRN_PROFILE END)   AS hrn4_rel4,
+
+        MAX(CASE WHEN rn = 5 THEN RELATIONSHIP_TYPE END)     AS hrn5_type5,
+        MAX(CASE WHEN rn = 5 THEN RELATED_HRN_PROFILE END)   AS hrn5_rel5
+
+    FROM rel_ranked
+    WHERE rn <= 5
+    GROUP BY WORK_ITEM_ID
+)
+
+SELECT
+    b.*,
+    r.hrn1_type1,
+    r.hrn1_rel1,
+    r.hrn2_type2,
+    r.hrn2_rel2,
+    r.hrn3_type3,
+    r.hrn3_rel3,
+    r.hrn4_type4,
+    r.hrn4_rel4,
+    r.hrn5_type5,
+    r.hrn5_rel5
+FROM base_data b
+LEFT JOIN rel_pivot r
+    ON b.work_item_id = r.work_item_id
+ORDER BY b.work_item_id;
