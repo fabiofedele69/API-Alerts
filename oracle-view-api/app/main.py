@@ -5,71 +5,100 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app.db import fetch_reporter_data
+from app.logger import logger
 
 app = FastAPI(
     title="Oracle Reporter API",
-    description="Internal API exposing Oracle 19c view LC_SCMT.VW_API_REPORTER",
-    version="1.0.0"
+    version="1.0"
 )
 
 
+@app.on_event("startup")
+def startup():
+
+    logger.info("Reporter API started")
+
+
+@app.on_event("shutdown")
+def shutdown():
+
+    logger.info("Reporter API stopped")
+
+
 @app.get("/")
-def root():
+def health():
+
+    logger.info("Health endpoint invoked")
+
     return {
-        "application": "Oracle Reporter API",
+        "application": "Reporter API",
         "status": "running"
     }
 
 
 @app.get("/api/reporter")
-def get_reporter_data():
-    """
-    Main endpoint.
+def reporter():
 
-    Returns all records from LC_SCMT.VW_API_REPORTER as JSON.
-    This is the endpoint intended to be consumed by the external application.
-    """
+    logger.info("GET /api/reporter")
+
     try:
+
         data = fetch_reporter_data()
+
         return data
 
-    except Exception as e:
+    except Exception:
+
+        logger.exception("Error retrieving Oracle data")
+
         raise HTTPException(
             status_code=500,
-            detail=f"Error while reading Oracle view: {str(e)}"
+            detail="Internal Server Error"
         )
 
 
 @app.get("/api/reporter/excel")
-def get_reporter_excel():
-    """
-    Evaluation endpoint only.
+def reporter_excel():
 
-    Returns all records from LC_SCMT.VW_API_REPORTER as an Excel file.
-    This endpoint is intended only for validation/testing purposes.
-    """
+    logger.info("GET /api/reporter/excel")
+
     try:
+
         data = fetch_reporter_data()
 
-        df = pd.DataFrame(data)
+        dataframe = pd.DataFrame(data)
 
         output = BytesIO()
 
-        with pd.ExcelWriter(output, engine="openpyxl") as writer:
-            df.to_excel(writer, index=False, sheet_name="VW_API_REPORTER")
+        with pd.ExcelWriter(
+            output,
+            engine="openpyxl"
+        ) as writer:
+
+            dataframe.to_excel(
+                writer,
+                sheet_name="VW_API_REPORTER",
+                index=False
+            )
 
         output.seek(0)
+
+        logger.info("Excel successfully generated")
 
         return StreamingResponse(
             output,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             headers={
-                "Content-Disposition": "attachment; filename=vw_api_reporter.xlsx"
+                "Content-Disposition":
+                "attachment; filename=vw_api_reporter.xlsx"
             }
         )
 
-    except Exception as e:
+    except Exception:
+
+        logger.exception("Excel generation failed")
+
         raise HTTPException(
             status_code=500,
-            detail=f"Error while creating Excel file: {str(e)}"
+            detail="Internal Server Error"
         )
