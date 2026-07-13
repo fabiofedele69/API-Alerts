@@ -1,0 +1,459 @@
+# Oracle View API - Production Server Assessment Checklist
+
+## Objective
+
+The purpose of this assessment is to collect all the technical information required to package the Oracle View API as an RPM package, deploy it on the Production RHEL server, register it as a systemd service and integrate it with the existing FCSCMT application.
+
+---
+
+# 1. Operating System
+
+Verify the operating system version and architecture.
+
+```bash
+cat /etc/redhat-release
+uname -a
+uname -m
+
+rpm --version
+yum --version
+systemctl --version
+```
+
+Document:
+
+- RHEL Version
+- Architecture
+- RPM Version
+- systemd Version
+
+---
+
+# 2. Existing Python Runtime
+
+A corporate Python runtime has been identified under
+
+```
+/app/M50/m50-python-3.10.15
+```
+
+Verify:
+
+```bash
+ls -la /app/M50/m50-python-3.10.15
+
+find /app/M50/m50-python-3.10.15 \
+-maxdepth 2 \
+-type f \
+\( -name python3 -o -name python -o -name pip3 -o -name pip \)
+
+```
+
+Check:
+
+```bash
+/app/M50/m50-python-3.10.15/bin/python3 --version
+
+/app/M50/m50-python-3.10.15/bin/python3 -m pip --version
+
+/app/M50/m50-python-3.10.15/bin/python3 -m venv --help
+```
+
+Determine whether this Python installation belongs to an RPM package.
+
+```bash
+rpm -qf /app/M50/m50-python-3.10.15/bin/python3
+```
+
+Questions:
+
+- Is Python managed through RPM?
+- Can applications use this Python runtime?
+- Can virtual environments be created from it?
+
+---
+
+# 3. Application Directory Structure
+
+Inspect the existing M50 filesystem layout.
+
+```bash
+ls -ld /app
+ls -ld /app/M50
+
+find /app/M50 -maxdepth 2 -type d | sort
+```
+
+Verify whether there are standard directories such as
+
+- bin
+- conf
+- etc
+- lib
+- logs
+- tmp
+- packages
+
+Determine the recommended installation directory for the API.
+
+Possible options:
+
+```
+/app/M50/api-reporter
+```
+
+or
+
+```
+/opt/api-reporter
+```
+
+---
+
+# 4. Existing FCSCMT Service User
+
+Determine which operating system user is running FCSCMT.
+
+```bash
+ps -ef | grep java
+
+ps -ef | grep tomcat
+```
+
+Inspect ownership.
+
+```bash
+ls -ld /app/M50
+ls -ld /app/M50/*
+```
+
+Verify
+
+- Service User
+- Service Group
+- Home Directory
+
+Question:
+
+Should the API run under
+
+- the existing FCSCMT service account
+
+or
+
+- a dedicated service account?
+
+---
+
+# 5. Existing systemd Services
+
+Identify the current application service.
+
+```bash
+systemctl list-unit-files | grep -Ei "fcscmt|tomcat|m50"
+
+systemctl status <SERVICE_NAME>
+
+systemctl cat <SERVICE_NAME>
+```
+
+Collect
+
+- ExecStart
+- User
+- Group
+- WorkingDirectory
+- EnvironmentFile
+
+---
+
+# 6. Existing Configuration Structure
+
+Determine where application configuration files are stored.
+
+```bash
+find /app/M50 \
+-maxdepth 3 \
+-type f \
+\( -name "*.properties" \
+-o -name "*.conf" \
+-o -name "*.env" \)
+```
+
+Questions
+
+Where should the Oracle View API configuration be stored?
+
+Examples
+
+```
+/app/M50/api-reporter/conf/api-reporter.env
+```
+
+or
+
+```
+/etc/api-reporter/
+```
+
+---
+
+# 7. Existing Logging Structure
+
+Determine where application logs are written.
+
+```bash
+find /app/M50 \
+-maxdepth 3 \
+-type d \
+\( -iname log -o -iname logs \)
+
+find /var/log \
+-maxdepth 2 \
+-type d | grep -Ei "fcscmt|m50|tomcat"
+```
+
+Determine
+
+- log directory
+- ownership
+- permissions
+
+Also verify
+
+```bash
+journalctl -u <SERVICE_NAME> -n 20
+```
+
+Question
+
+Should the API use
+
+- journalctl only
+
+or
+
+- journalctl + dedicated log file
+
+---
+
+# 8. Port Availability
+
+Verify whether port 8000 is available.
+
+```bash
+ss -ltnp | grep 8000
+
+ss -ltnp | grep -E "443|8080|8443"
+```
+
+Question
+
+Can the API safely bind to
+
+```
+127.0.0.1:8000
+```
+
+---
+
+# 9. HTTPS Infrastructure
+
+Determine which component terminates HTTPS.
+
+```bash
+ps -ef | grep -Ei "httpd|apache|nginx|tomcat|java"
+
+systemctl status httpd
+
+systemctl status nginx
+
+systemctl status tomcat
+
+ss -ltnp | grep 443
+```
+
+Question
+
+Is HTTPS terminated by
+
+- Apache HTTP Server
+- Tomcat
+- Nginx
+- Load Balancer
+- API Gateway
+
+---
+
+# 10. TLS Certificate
+
+Verify whether the Oracle View API can reuse the existing FCSCMT certificate.
+
+Questions
+
+- Which certificate is currently used?
+- Can the API be exposed as
+
+```
+https://fcscmt.company.com/api/reporter
+```
+
+using the same certificate?
+
+---
+
+# 11. Oracle Connectivity
+
+Verify that the application server can reach Oracle.
+
+```bash
+getent hosts <oracle-host>
+
+nc -vz <oracle-host> 1521
+```
+
+Determine whether Oracle Wallet or Instant Client is already used.
+
+```bash
+find /app/M50 \
+-name tnsnames.ora \
+-o -name sqlnet.ora
+```
+
+---
+
+# 12. Nexus Configuration
+
+Determine whether the server already uses Nexus.
+
+```bash
+yum repolist
+
+grep -R nexus /etc/yum.repos.d
+```
+
+Questions
+
+- Existing RPM repository?
+- Existing Python (PyPI) repository?
+- Existing corporate pip.conf?
+
+---
+
+# 13. Security
+
+Check
+
+```bash
+getenforce
+
+sestatus
+
+firewall-cmd --state
+```
+
+Determine
+
+- SELinux Mode
+- Firewall status
+
+---
+
+# 14. Existing RPM Packages
+
+Inspect existing M50 packages.
+
+```bash
+rpm -qa | grep -Ei "m50|fcscmt"
+```
+
+Inspect one package.
+
+```bash
+rpm -qi <PACKAGE>
+
+rpm -ql <PACKAGE>
+
+rpm -q --scripts <PACKAGE>
+```
+
+Questions
+
+- Installation path
+- Configuration path
+- Service registration
+- RPM naming convention
+
+---
+
+# 15. Deployment Strategy
+
+Please confirm the preferred deployment model.
+
+## Installation directory
+
+```
+______________________
+```
+
+## Service user
+
+```
+______________________
+```
+
+## Python runtime
+
+```
+______________________
+```
+
+## Configuration directory
+
+```
+______________________
+```
+
+## Log directory
+
+```
+______________________
+```
+
+## HTTPS endpoint
+
+```
+______________________
+```
+
+## Reverse proxy component
+
+```
+______________________
+```
+
+## RPM Repository
+
+```
+______________________
+```
+
+## Deployment Tool
+
+```
+GitLab → Nexus → Ansible
+```
+
+---
+
+# Deliverables
+
+The collected information will be used to prepare:
+
+- FastAPI application
+- RPM package
+- systemd service
+- GitLab CI/CD pipeline
+- Nexus publication
+- Ansible deployment
+- Production installation guide
