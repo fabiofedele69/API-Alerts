@@ -9,3 +9,28 @@ LD_LIBRARY_PATH=/app/M50/m50-openssl-1.1.1w/lib \
 from another terminal 
 curl -i http://127.0.0.1:8000/
 
+[Unit]
+Description=FCSCMT API Reporter
+After=network.target
+
+[Service]
+Type=simple
+
+User=um501001
+Group=um501001
+
+WorkingDirectory=/export/home/um501001/api-reporter
+
+Environment="LD_LIBRARY_PATH=/app/M50/m50-openssl-1.1.1w/lib"
+Environment="PYTHONUNBUFFERED=1"
+
+ExecStart=/export/home/um501001/api-reporter/venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+Restart=on-failure
+RestartSec=5
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
