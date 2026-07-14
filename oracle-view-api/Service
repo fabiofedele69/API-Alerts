@@ -37,3 +37,12 @@ WantedBy=multi-user.target
 
 
 um501001 ALL=(root) NOPASSWD: /bin/systemctl start api-reporter.service, /bin/systemctl stop api-reporter.service, /bin/systemctl status api-reporter.service
+
+Defaults:um501001 !requiretty
+
+um501001 ALL=(root) NOPASSWD: \
+/bin/systemctl start api-reporter, \
+/bin/systemctl stop api-reporter, \
+/bin/systemctl restart api-reporter, \
+/bin/systemctl status api-reporter, \
+/bin/systemctl reload api-reporter
