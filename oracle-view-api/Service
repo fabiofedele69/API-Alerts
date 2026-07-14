@@ -1,0 +1,11 @@
+cd /export/home/um501001/api-reporter
+
+LD_LIBRARY_PATH=/app/M50/m50-openssl-1.1.1w/lib \
+/export/home/um501001/api-reporter/venv/bin/python \
+-m uvicorn app.main:app \
+--host 127.0.0.1 \
+--port 8000
+
+from another terminal 
+curl -i http://127.0.0.1:8000/
+
