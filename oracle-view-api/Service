@@ -34,3 +34,6 @@ StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
+
+
+um501001 ALL=(root) NOPASSWD: /bin/systemctl start api-reporter.service, /bin/systemctl stop api-reporter.service, /bin/systemctl status api-reporter.service
