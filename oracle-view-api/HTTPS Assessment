@@ -1,0 +1,11 @@
+Step 2.1
+ss -ltnp | egrep ':80|:443|:8080|:8443|:8009|:8000'
+
+Step 2.2
+ps -ef | egrep "httpd|apache|nginx|java|tomcat|catalina" | grep -v grep
+
+Step 2.3
+systemctl list-units --type=service | egrep "httpd|apache|nginx|tomcat|fcscmt"
+
+Step 2.4
+rpm -qa | egrep "httpd|apache|nginx|tomcat|mod_ssl|mod_proxy|mod_jk"
