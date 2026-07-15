@@ -17,3 +17,8 @@ find /etc -type f \( -name "*.conf" -o -name "httpd.conf" -o -name "ssl.conf" \)
 find / -type f | grep apache 2>/dev/null
 find / -type f | grep proxy 2>/dev/null
 find / -type f | egrep "workers.properties|uriworkermap.properties|mod_jk|httpd.conf" 2>/dev/null
+
+
+grep -RniE \
+'fcscmt-actone-uat-ch\.appl\.ubs\.net|10\.82\.15\.221|28000|/RCM|ProxyPass|JkMount' \
+/app/M50/dyn/cfg /app/M50/dyn/etc 2>/dev/null | head -50
