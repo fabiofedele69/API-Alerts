@@ -27,3 +27,8 @@ grep -RniE \
 grep -RniE \
 'AuthType|AuthLDAPURL|Require ldap|Require valid-user|SSLVerifyClient|Location|LocationMatch|RCM' \
 /app/web/dyn/config/instances/<instance>/conf 2>/dev/null
+
+grep -Rni "SSLVerifyClient" /app/web/dyn/config/instances/a305-9571-9953/conf
+
+grep -Rni "AuthType\|Require valid-user\|AuthLDAP\|RequestHeader" \
+/app/web/dyn/config/instances/a305-9571-9953/conf
