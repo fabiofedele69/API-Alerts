@@ -1,0 +1,23 @@
+Internet
+      |
+      |
+SLB (Load Balancer)
+      |
+      |
+Apache24 Stack
+      |
+      |
+Tomcat (RCM)
+      |
+      |
+Actimize
+
+Internet
+      |
+SLB
+      |
+Apache24 Stack
+      |
+      +------------------> Tomcat (RCM)
+      |
+      +------------------> FastAPI Reporter (8000)
