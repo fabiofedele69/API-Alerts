@@ -9,3 +9,11 @@ systemctl list-units --type=service | egrep "httpd|apache|nginx|tomcat|fcscmt"
 
 Step 2.4
 rpm -qa | egrep "httpd|apache|nginx|tomcat|mod_ssl|mod_proxy|mod_jk"
+
+Final commands
+
+find /app -type f \( -name "*.conf" -o -name "httpd.conf" -o -name "ssl.conf" \) 2>/dev/null
+find /etc -type f \( -name "*.conf" -o -name "httpd.conf" -o -name "ssl.conf" \) 2>/dev/null
+find / -type f | grep apache 2>/dev/null
+find / -type f | grep proxy 2>/dev/null
+find / -type f | egrep "workers.properties|uriworkermap.properties|mod_jk|httpd.conf" 2>/dev/null
