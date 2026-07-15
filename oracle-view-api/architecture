@@ -1,23 +1,195 @@
-Internet
-      |
-      |
-SLB (Load Balancer)
-      |
-      |
-Apache24 Stack
-      |
-      |
-Tomcat (RCM)
-      |
-      |
-Actimize
+                         Users
+                           │
+                           │ HTTPS :443
+                           ▼
+      fcscmt-actone-uat-ch.appl.ubs.net
+                           │
+                           │
+                    SLB / Load Balancer
+                           │
+                           │ HTTPS :443
+                           ▼
+                  Apache24 Stack
+                  (Reverse Proxy)
+                           │
+                           │ HTTP :28000
+                           ▼
+                    Tomcat (RCM)
+                 APP_NAME=RCM
+                 WEB_MAIN_PORT=28000
+                           │
+                           │
+                           ▼
+               NICE Actimize Application
+                 (/RCM/Alerts.jsp)
 
-Internet
-      |
-SLB
-      |
-Apache24 Stack
-      |
-      +------------------> Tomcat (RCM)
-      |
-      +------------------> FastAPI Reporter (8000)
+
+
+proposed architecture
+
+                         Users
+                           │
+                           │ HTTPS :443
+                           ▼
+      fcscmt-actone-uat-ch.appl.ubs.net
+                           │
+                           │
+                    SLB / Load Balancer
+                           │
+                           │ HTTPS :443
+                           ▼
+                  Apache24 Stack
+                  (Reverse Proxy)
+                     │             │
+                     │             │
+                     │             │
+         HTTP :28000 │             │ HTTP :8000
+                     ▼             ▼
+              Tomcat (RCM)     FastAPI Reporter
+                 /RCM              /reporter
+                     │
+                     ▼
+             NICE Actimize
+
+1. Which component terminates HTTPS?
+
+Can you explain the HTTPS architecture for FCSCMT? Which component terminates SSL/TLS?
+
+2. Which repository configures the reverse proxy?
+
+3. How is /RCM mapped?
+
+Where is the mapping between
+
+https://fcscmt-actone-uat-ch.appl.ubs.net/RCM
+
+and
+
+Tomcat:28000
+
+configured?
+
+4. Can another application be published?
+
+Very important.
+
+Ask:
+
+Can we publish another backend application on the same hostname?
+
+Example:
+
+https://fcscmt-actone-uat-ch.appl.ubs.net/reporter
+
+instead of
+
+https://server:8000
+
+5. Can Apache proxy to another backend?
+
+Ask:
+
+Can Apache reverse proxy to another local service?
+
+Example:
+
+/reporter
+        |
+        v
+http://localhost:8000
+
+If they answer "yes", we're almost done.
+
+6. How are certificates managed?
+
+Ask:
+
+If a new application is added, do we need a new certificate or does Apache already use a wildcard/shared certificate?
+
+Most likely the answer is:
+
+Existing certificate.
+
+7. Is port 8000 allowed internally?
+
+Ask:
+
+Can an internal service listen on port 8000?
+
+or
+
+Is there a preferred port for internal REST services?
+
+Maybe they already use:
+
+8080
+9000
+18080
+
+8. How are new applications registered?
+
+Ask:
+
+If I develop a new FastAPI application, what is the standard onboarding procedure?
+
+Do we need:
+
+Apache configuration
+DNS
+Firewall
+Ansible
+NPA
+
+9. Can the API have its own context path?
+
+Ask:
+
+Can we expose a completely separate application like
+
+/reporter
+
+instead of
+
+/RCM/reporter
+
+This is exactly your desired architecture.
+
+10. Authentication
+
+Since your API will be used inside UBS:
+
+How should the new API authenticate users?
+
+Options might be:
+
+LDAP
+SSO
+Header from Apache
+Mutual TLS
+Service Account
+
+11. Deployment
+
+Ask:
+
+Can the FastAPI application be deployed on the existing AIS server, or should it have its own application server?
+
+This determines where the RPM will be installed.
+
+12. Existing REST APIs
+
+Very useful.
+
+Ask:
+
+Do we already have another REST API deployed on this infrastructure that I can use as an example?
+
+If yes...
+
+You're done.
+
+Because you simply copy the architecture.
+
+
+Which GitLab repository or Ansible role configures the Apache24 reverse proxy that exposes https://fcscmt-actone-uat-ch.appl.ubs.net/RCM, and how would we add a new endpoint like /reporter that forwards to a FastAPI service running on localhost:8000?
+
