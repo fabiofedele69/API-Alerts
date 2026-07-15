@@ -22,3 +22,8 @@ find / -type f | egrep "workers.properties|uriworkermap.properties|mod_jk|httpd.
 grep -RniE \
 'fcscmt-actone-uat-ch\.appl\.ubs\.net|10\.82\.15\.221|28000|/RCM|ProxyPass|JkMount' \
 /app/M50/dyn/cfg /app/M50/dyn/etc 2>/dev/null | head -50
+
+
+grep -RniE \
+'AuthType|AuthLDAPURL|Require ldap|Require valid-user|SSLVerifyClient|Location|LocationMatch|RCM' \
+/app/web/dyn/config/instances/<instance>/conf 2>/dev/null
