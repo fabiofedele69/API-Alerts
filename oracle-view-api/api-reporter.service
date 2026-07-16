@@ -1,0 +1,22 @@
+[Unit]
+Description=FCSCMT Reporter API
+After=network.target
+
+[Service]
+Type=simple
+User=um501001
+Group=gm501001
+
+WorkingDirectory=/app/M50/m50-api-reporter
+EnvironmentFile=/app/M50/m50-api-reporter/config/api-reporter.env
+
+ExecStart=/app/M50/m50-api-reporter/venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+Restart=on-failure
+RestartSec=5
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
