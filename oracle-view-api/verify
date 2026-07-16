@@ -3,3 +3,6 @@ python -c "import uvicorn; print('uvicorn', uvicorn.__version__)"
 python -c "import oracledb; print('oracledb', oracledb.__version__)"
 python -c "import openpyxl; print('openpyxl', openpyxl.__version__)"
 python -c "import dotenv; print('python-dotenv OK')"
+
+
+openssl s_client -connect fcscmt-actone-uat-ch.appl.ubs.net:443 -showcerts -state
