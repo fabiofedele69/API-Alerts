@@ -1,0 +1,19 @@
+<VirtualHost 10.82.29.59:443>
+    ServerName fcscmt-actone-uat-ch.appl.ubs.net
+
+    SSLEngine on
+    SSLVerifyClient optional
+    SSLVerifyDepth 3
+
+    # Mark only requests for /reporter
+    SetEnvIf Request_URI "^/reporter(/|$)" reporter_request
+
+    # Temporary client-certificate diagnostic format
+    LogFormat "%t client_ip=%a method=%m uri=%U status=%>s ssl_verify=\"%{SSL_CLIENT_VERIFY}x\" client_dn=\"%{SSL_CLIENT_S_DN}x\" client_cn=\"%{SSL_CLIENT_S_DN_CN}x\" issuer_dn=\"%{SSL_CLIENT_I_DN}x\" serial=\"%{SSL_CLIENT_M_SERIAL}x\"" reporter_ssl
+
+    # Write only /reporter requests to this log
+    CustomLog "/app/web/dyn/config/instances/a305-9572-0011/logs/reporter_ssl_access.log" reporter_ssl env=reporter_request
+
+</VirtualHost>
+
+
