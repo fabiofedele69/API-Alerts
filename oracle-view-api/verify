@@ -9,3 +9,5 @@ openssl s_client -connect fcscmt-actone-uat-ch.appl.ubs.net:443 -showcerts -stat
 
 
 openssl crl2pkcs7 -nocrl -certfile /app/web/dyn/config/instances/a305-9572-0011/ssl/cacerts.pem | openssl pkcs7 -print_certs -text | egrep "Subject:|Issuer:"
+
+openssl crl2pkcs7 -nocrl -certfile /app/web/dyn/config/instances/a305-9572-0011/ssl/cacerts.pem | openssl pkcs7 -print_certs -text -noout | grep "Subject:"
