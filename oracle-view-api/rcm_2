@@ -1,0 +1,2 @@
+grep -Rni "init_oracle_client\|dbclient\|thick_mode" \
+/app/M50/m50-api-reporter/app
