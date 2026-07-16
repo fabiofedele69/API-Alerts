@@ -1,0 +1,10 @@
+export LD_LIBRARY_PATH=/app/M50/m50-openssl-1.1.1w/lib:/app/ora/dbclient/lib:${LD_LIBRARY_PATH}
+
+/app/M50/python-3.10.15/bin/python3.10 -m venv venv
+
+source venv/bin/activate
+
+which python
+python --version
+python -m pip --version
+python -c "import ssl; print(ssl.OPENSSL_VERSION)"
