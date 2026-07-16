@@ -13,3 +13,14 @@ Select-Object Subject, Issuer, NotBefore, NotAfter, HasPrivateKey,
 Get-ChildItem Cert:\CurrentUser\My |
 Where-Object Subject -Match "Fedele Fabio" |
 Format-List Subject,Issuer
+
+
+grep -RniE \
+'SSLCACertificateFile|SSLCACertificatePath|SSLCADNRequestFile|SSLVerifyDepth|NSSCertificateDatabase|NSSVerifyClient|NSSCipherSuite' \
+/app/web/dyn/config/instances/a305-9571-9953/conf
+
+grep -Rni "UBS Staff Authentication CA 7" \
+/app/web/dyn/config/instances/a305-9571-9953 \
+/app/web/dyn/config/ssl \
+/app/web/dyn/certs \
+2>/dev/null
