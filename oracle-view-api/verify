@@ -6,3 +6,6 @@ python -c "import dotenv; print('python-dotenv OK')"
 
 
 openssl s_client -connect fcscmt-actone-uat-ch.appl.ubs.net:443 -showcerts -state
+
+
+openssl crl2pkcs7 -nocrl -certfile /app/web/dyn/config/instances/a305-9572-0011/ssl/cacerts.pem | openssl pkcs7 -print_certs -text | egrep "Subject:|Issuer:"
