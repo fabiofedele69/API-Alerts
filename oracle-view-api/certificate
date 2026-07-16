@@ -2,3 +2,9 @@ Get-ChildItem Cert:\CurrentUser\My |
 Where-Object Subject -Match "FA0KAMZ" |
 Select-Object Subject, Issuer, NotBefore, NotAfter, HasPrivateKey,
     @{Name="EnhancedKeyUsage";Expression={$_.EnhancedKeyUsageList.FriendlyName -join ", "}}
+
+
+Get-ChildItem Cert:\CurrentUser\My |
+Where-Object Subject -Match "Fedele Fabio|49052741" |
+Select-Object Subject, Issuer, NotBefore, NotAfter, HasPrivateKey,
+@{Name="EnhancedKeyUsage";Expression={$_.EnhancedKeyUsageList.FriendlyName -join ", "}}
