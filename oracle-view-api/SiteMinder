@@ -1,0 +1,7 @@
+# Check 1
+hostname -f
+ps -ef | grep -E '[h]ttpd|[a]pache'
+
+# Check 2
+ps -ef | grep '[h]ttpd'
+
