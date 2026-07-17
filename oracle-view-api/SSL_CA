@@ -1,0 +1,4 @@
+awk '
+/-----BEGIN CERTIFICATE-----/ {n++; f="/tmp/ca" n ".pem"}
+{print > f}
+' /app/web/dyn/config/ssl/abc-a305-9572-0011/cacerts.pem
