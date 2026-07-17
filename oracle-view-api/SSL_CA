@@ -2,3 +2,17 @@ awk '
 /-----BEGIN CERTIFICATE-----/ {n++; f="/tmp/ca" n ".pem"}
 {print > f}
 ' /app/web/dyn/config/ssl/abc-a305-9572-0011/cacerts.pem
+
+
+csplit -s -f /tmp/ca_ -b "%02d.pem" /app/web/dyn/config/ssl/a305-9572-0011/cacerts.pem '/-----BEGIN CERTIFICATE-----/' '{*}'
+
+ls -l /tmp/ca_*.pem
+
+for f in /tmp/ca_*.pem
+do
+    if grep -q "BEGIN CERTIFICATE" "$f"
+    then
+        echo "===== $f ====="
+        openssl x509 -in "$f" -noout -subject -issuer
+    fi
+done
