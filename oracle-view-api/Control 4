@@ -1,0 +1,9 @@
+python - <<'PY'
+from app.vault import get_vault_token
+
+token = get_vault_token()
+
+print("EVA authentication successful")
+print("Token received:", bool(token))
+print("Token length:", len(token))
+PY
