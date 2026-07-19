@@ -7,3 +7,14 @@ print("EVA authentication successful")
 print("Token received:", bool(token))
 print("Token length:", len(token))
 PY
+
+
+python - <<'PY'
+from app.vault import get_oracle_password
+
+password = get_oracle_password()
+
+print("EVA secret retrieval successful")
+print("Password received:", bool(password))
+print("Password length:", len(password))
+PY
