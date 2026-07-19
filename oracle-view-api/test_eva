@@ -1,0 +1,18 @@
+cd /app/M50/m50-api-reporter
+
+/app/M50/m50-api-reporter/venv/bin/python - <<'PY'
+from app.eva import read_eva_config
+
+config = read_eva_config()
+
+print("EVA configuration loaded successfully")
+print("Certificate:", config["cert"])
+print("Private key:", config["key"])
+print("Namespace:", config["namespace"])
+print("Role:", config["role"])
+print("Login URL:", config["login_url"])
+print("Secret URL:", config["secret_url"])
+print("TLS verification:", config["verify"])
+print("Open timeout:", config["open_timeout"])
+print("Read timeout:", config["read_timeout"])
+PY
