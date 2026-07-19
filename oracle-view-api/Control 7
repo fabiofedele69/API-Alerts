@@ -1,0 +1,71 @@
+python - <<'PY'
+from app.eva import read_eva_config
+
+cfg = read_eva_config()
+
+print("RCM EVA configuration loaded")
+print("Configuration keys:", sorted(cfg.keys()))
+print("Certificate exists:", __import__("os").path.isfile(cfg["cert"]))
+print("Private key exists:", __import__("os").path.isfile(cfg["key"]))
+print("Login endpoint configured:", cfg["login_url"].endswith("/v1/auth/cert/login"))
+print("Secret endpoint configured:", "/v1/secret/data/runtime/" in cfg["secret_url"])
+PY
+
+python - <<'PY'
+from app.vault import get_oracle_password
+
+password = get_oracle_password()
+
+print("RCM datasource secret retrieval successful")
+print("Password received:", bool(password))
+print("Password length:", len(password))
+PY
+
+python - <<'PY'
+import oracledb
+
+from app.config import settings
+from app.vault import get_oracle_password
+
+password = get_oracle_password()
+
+dsn = oracledb.makedsn(
+    settings.ORACLE_HOST,
+    int(settings.ORACLE_PORT),
+    service_name=settings.ORACLE_SERVICE,
+)
+
+connection = None
+cursor = None
+
+try:
+    connection = oracledb.connect(
+        user="LC_RCM_INC",
+        password=password,
+        dsn=dsn,
+    )
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            SYS_CONTEXT('USERENV', 'SESSION_USER'),
+            COUNT(*)
+        FROM LC_SCMT.VW_API_REPORTER
+        GROUP BY SYS_CONTEXT('USERENV', 'SESSION_USER')
+    """)
+
+    session_user, row_count = cursor.fetchone()
+
+    print("Oracle connection successful")
+    print("Session user:", session_user)
+    print("VW_API_REPORTER row count:", row_count)
+
+finally:
+    if cursor is not None:
+        cursor.close()
+
+    if connection is not None:
+        connection.close()
+PY
+
