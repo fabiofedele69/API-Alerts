@@ -1,3 +1,50 @@
 grep -E \
 '^(dataSource.user|dataSource.url|vault.address|vault.path|vault.namespace|vault.ssl.clientCertPem|vault.ssl.clientKeyPem|vault.ssl.roleCert)=' \
 /app/M50/dyn/m50-tomcat/acm_repository.properties
+
+SELECT
+    SYS_CONTEXT('USERENV', 'SESSION_USER')  AS session_user,
+    SYS_CONTEXT('USERENV', 'CURRENT_SCHEMA') AS current_schema
+FROM dual;
+
+SELECT owner, object_name, object_type
+FROM all_objects
+WHERE owner = 'LC_SCMT'
+  AND object_name = 'VW_API_REPORTER';
+
+SELECT
+    grantee,
+    owner,
+    table_name,
+    privilege,
+    grantor
+FROM all_tab_privs
+WHERE grantee = 'LC_RCM_INC'
+  AND owner = 'LC_SCMT'
+  AND table_name = 'VW_API_REPORTER';
+
+SELECT grantee, granted_role
+FROM dba_role_privs
+WHERE grantee = 'LC_RCM_INC';
+
+SELECT granted_role
+FROM user_role_privs;
+
+SELECT
+    rp.role,
+    rp.owner,
+    rp.table_name,
+    rp.privilege
+FROM role_tab_privs rp
+WHERE rp.owner = 'LC_SCMT'
+  AND rp.table_name = 'VW_API_REPORTER'
+  AND rp.role IN (
+      SELECT granted_role
+      FROM dba_role_privs
+      WHERE grantee = 'LC_RCM_INC'
+  );
+
+SELECT
+    SYS_CONTEXT('USERENV', 'SESSION_USER') AS session_user,
+    SYS_CONTEXT('USERENV', 'CURRENT_SCHEMA') AS current_schema
+FROM dual;
