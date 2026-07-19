@@ -1,0 +1,32 @@
+required_properties = {
+    "vault.address": "Vault address",
+    "vault.path": "Vault secret path",
+    "vault-ssl.clientCertPem": "Client certificate",
+    "vault-ssl.clientKeyPem": "Client private key",
+    "vault-ssl.role": "Vault certificate role",
+    "vault.namespace": "Vault namespace",
+}
+
+missing = [
+    property_name
+    for property_name in required_properties
+    if not properties.get(property_name)
+]
+
+if missing:
+    raise EvaConfigurationError(
+        "Missing required properties in "
+        f"{RCM_PROPERTIES_FILE}: {', '.join(missing)}"
+    )
+
+vault_address = properties["vault.address"].rstrip("/")
+vault_path = properties["vault.path"].lstrip("/")
+
+return {
+    "cert": properties["vault-ssl.clientCertPem"],
+    "key": properties["vault-ssl.clientKeyPem"],
+    "namespace": properties["vault.namespace"],
+    "role": properties["vault-ssl.role"],
+    "login_url": f"{vault_address}/v1/auth/cert/login",
+    "secret_url": f"{vault_address}/v1/{vault_path}",
+}
