@@ -1,0 +1,30 @@
+cd /app/M50/m50-api-reporter
+
+/app/M50/m50-api-reporter/venv/bin/python - <<'PY'
+from app.database import get_connection
+
+conn = None
+cur = None
+
+try:
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT USER,
+               (SELECT COUNT(*) FROM LC_SCMT.VW_API_REPORTER)
+        FROM dual
+    """)
+
+    user, count = cur.fetchone()
+
+    print("Oracle connection successful")
+    print("Connected user:", user)
+    print("VW_API_REPORTER rows:", count)
+
+finally:
+    if cur:
+        cur.close()
+    if conn:
+        conn.close()
+PY
