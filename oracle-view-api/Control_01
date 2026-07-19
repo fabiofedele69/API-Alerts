@@ -1,0 +1,3 @@
+grep -E \
+'^(dataSource.user|dataSource.url|vault.address|vault.path|vault.namespace|vault.ssl.clientCertPem|vault.ssl.clientKeyPem|vault.ssl.roleCert)=' \
+/app/M50/dyn/m50-tomcat/acm_repository.properties
