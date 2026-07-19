@@ -48,3 +48,8 @@ SELECT
     SYS_CONTEXT('USERENV', 'SESSION_USER') AS session_user,
     SYS_CONTEXT('USERENV', 'CURRENT_SCHEMA') AS current_schema
 FROM dual;
+
+
+source /app/M50/m50-api-reporter/venv/bin/activate
+
+python -c "import requests; print(requests.__version__)"
