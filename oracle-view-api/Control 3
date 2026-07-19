@@ -1,2 +1,3 @@
-grep -Ev '^[[:space:]]*(#|$)' \
-/app/M50/m50-rcm-custom/bin/env/eva.config
+grep -Ev '^[[:space:]]*(#|$)' /app/M50/m50-rcm-custom/bin/env/eva.config
+
+grep -nE 'curl|cert|key|namespace|role|login|secret|token' /app/M50/m50-rcm-custom/bin/deploy-user-pwd.sh
