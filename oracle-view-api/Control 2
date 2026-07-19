@@ -1,0 +1,40 @@
+cd /app/M50
+
+BACKUP_TS=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/app/M50/api-reporter-backup-${BACKUP_TS}"
+
+mkdir -p "${BACKUP_DIR}"
+chmod 700 "${BACKUP_DIR}"
+
+cp -a /app/M50/m50-api-reporter \
+      "${BACKUP_DIR}/"
+
+systemctl cat api-reporter.service \
+  > "${BACKUP_DIR}/api-reporter.service.txt"
+
+SERVICE_FILE=$(systemctl show -p FragmentPath --value api-reporter.service)
+
+echo "Service file: ${SERVICE_FILE}"
+
+if [ -n "${SERVICE_FILE}" ] && [ -f "${SERVICE_FILE}" ]; then
+    cp -a "${SERVICE_FILE}" "${BACKUP_DIR}/"
+fi
+
+
+if [ -f /etc/sysconfig/api-reporter ]; then
+    cp -a /etc/sysconfig/api-reporter "${BACKUP_DIR}/"
+fi
+
+
+chmod -R go-rwx "${BACKUP_DIR}"
+
+echo "Backup created at: ${BACKUP_DIR}"
+find "${BACKUP_DIR}" -maxdepth 3 -type f -ls
+
+
+systemctl status api-reporter.service --no-pager \
+  > "${BACKUP_DIR}/service-status-before-change.txt"
+
+curl -sS -o /dev/null \
+  -w "Current health HTTP status: %{http_code}\n" \
+  http://127.0.0.1:8000/health
