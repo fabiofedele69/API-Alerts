@@ -1,32 +1,269 @@
-required_properties = {
-    "vault.address": "Vault address",
-    "vault.path": "Vault secret path",
-    "vault-ssl.clientCertPem": "Client certificate",
-    "vault-ssl.clientKeyPem": "Client private key",
-    "vault-ssl.role": "Vault certificate role",
-    "vault.namespace": "Vault namespace",
-}
+cat > /app/M50/m50-api-reporter/app/eva.py <<'PY'
+"""
+Read the existing EVA/Vault configuration used by the RCM application.
 
-missing = [
-    property_name
-    for property_name in required_properties
-    if not properties.get(property_name)
-]
+This module only reads configuration values from the existing
+acm_repository.properties file.
 
-if missing:
+No Vault token, Oracle password, or other secret is stored here.
+"""
+
+from pathlib import Path
+from typing import Dict
+import os
+
+
+DEFAULT_RCM_PROPERTIES_FILE = (
+    "/app/M50/dyn/m50-tomcat/acm_repository.properties"
+)
+
+RCM_PROPERTIES_FILE = Path(
+    os.getenv(
+        "RCM_PROPERTIES_FILE",
+        DEFAULT_RCM_PROPERTIES_FILE,
+    )
+)
+
+
+class EvaConfigurationError(RuntimeError):
+    """Raised when the EVA/Vault configuration is incomplete or invalid."""
+
+
+def _read_properties_file(path: Path) -> Dict[str, str]:
+    """
+    Read a Java-style .properties file.
+
+    Empty lines and lines beginning with # or ! are ignored.
+    Property values are split from their keys using the first '=' character.
+    """
+
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"Configuration file not found: {path}"
+        )
+
+    properties: Dict[str, str] = {}
+
+    with path.open("r", encoding="utf-8") as file:
+        for raw_line in file:
+            line = raw_line.strip()
+
+            if not line:
+                continue
+
+            if line.startswith("#") or line.startswith("!"):
+                continue
+
+            if "=" not in line:
+                continue
+
+            key, value = line.split("=", 1)
+
+            key = key.strip()
+            value = value.strip()
+
+            if key:
+                properties[key] = value
+
+    return properties
+
+
+def _first_property(
+    properties: Dict[str, str],
+    *property_names: str,
+) -> str:
+    """Return the first configured non-empty property."""
+
+    for property_name in property_names:
+        value = properties.get(property_name)
+
+        if value is not None and value.strip():
+            return value.strip()
+
+    return ""
+
+
+def _read_integer_property(
+    properties: Dict[str, str],
+    property_name: str,
+    default_value: int,
+) -> int:
+    """Read a positive integer property or return its default value."""
+
+    value = properties.get(property_name)
+
+    if value is None or not value.strip():
+        return default_value
+
+    try:
+        integer_value = int(value.strip())
+    except ValueError as exc:
+        raise EvaConfigurationError(
+            f"Property {property_name!r} in "
+            f"{RCM_PROPERTIES_FILE} must be an integer"
+        ) from exc
+
+    if integer_value <= 0:
+        raise EvaConfigurationError(
+            f"Property {property_name!r} in "
+            f"{RCM_PROPERTIES_FILE} must be greater than zero"
+        )
+
+    return integer_value
+
+
+def _read_boolean_property(
+    properties: Dict[str, str],
+    property_names: tuple[str, ...],
+    default_value: bool,
+) -> bool:
+    """Read a boolean property supporting common true/false values."""
+
+    value = _first_property(properties, *property_names)
+
+    if not value:
+        return default_value
+
+    normalized_value = value.lower()
+
+    if normalized_value in {"true", "yes", "1", "on"}:
+        return True
+
+    if normalized_value in {"false", "no", "0", "off"}:
+        return False
+
     raise EvaConfigurationError(
-        "Missing required properties in "
-        f"{RCM_PROPERTIES_FILE}: {', '.join(missing)}"
+        f"Property {property_names[0]!r} in "
+        f"{RCM_PROPERTIES_FILE} must contain true or false"
     )
 
-vault_address = properties["vault.address"].rstrip("/")
-vault_path = properties["vault.path"].lstrip("/")
 
-return {
-    "cert": properties["vault-ssl.clientCertPem"],
-    "key": properties["vault-ssl.clientKeyPem"],
-    "namespace": properties["vault.namespace"],
-    "role": properties["vault-ssl.role"],
-    "login_url": f"{vault_address}/v1/auth/cert/login",
-    "secret_url": f"{vault_address}/v1/{vault_path}",
-}
+def read_eva_config() -> Dict[str, object]:
+    """
+    Read and validate the EVA/Vault configuration.
+
+    No token or password is read or stored here.
+    """
+
+    properties = _read_properties_file(RCM_PROPERTIES_FILE)
+
+    vault_address = _first_property(
+        properties,
+        "vault.address",
+    )
+
+    vault_path = _first_property(
+        properties,
+        "vault.path",
+    )
+
+    client_certificate = _first_property(
+        properties,
+        "vault-ssl.clientCertPem",
+        "vault.ssl.clientCertPem",
+    )
+
+    client_private_key = _first_property(
+        properties,
+        "vault-ssl.clientKeyPem",
+        "vault.ssl.clientKeyPem",
+    )
+
+    certificate_role = _first_property(
+        properties,
+        "vault-ssl.role",
+        "vault.ssl.roleCert",
+        "vault.ssl.role",
+    )
+
+    vault_namespace = _first_property(
+        properties,
+        "vault.namespace",
+    )
+
+    missing = []
+
+    if not vault_address:
+        missing.append("vault.address")
+
+    if not vault_path:
+        missing.append("vault.path")
+
+    if not client_certificate:
+        missing.append(
+            "vault-ssl.clientCertPem "
+            "(or vault.ssl.clientCertPem)"
+        )
+
+    if not client_private_key:
+        missing.append(
+            "vault-ssl.clientKeyPem "
+            "(or vault.ssl.clientKeyPem)"
+        )
+
+    if not certificate_role:
+        missing.append(
+            "vault-ssl.role "
+            "(or vault.ssl.roleCert)"
+        )
+
+    if not vault_namespace:
+        missing.append("vault.namespace")
+
+    if missing:
+        raise EvaConfigurationError(
+            "Missing required properties in "
+            f"{RCM_PROPERTIES_FILE}: {', '.join(missing)}"
+        )
+
+    certificate_path = Path(client_certificate)
+    private_key_path = Path(client_private_key)
+
+    if not certificate_path.is_file():
+        raise EvaConfigurationError(
+            f"Vault client certificate not found: "
+            f"{certificate_path}"
+        )
+
+    if not private_key_path.is_file():
+        raise EvaConfigurationError(
+            f"Vault client private key not found: "
+            f"{private_key_path}"
+        )
+
+    vault_address = vault_address.rstrip("/")
+    vault_path = vault_path.lstrip("/")
+
+    open_timeout = _read_integer_property(
+        properties,
+        "vault.openTimeout",
+        5,
+    )
+
+    read_timeout = _read_integer_property(
+        properties,
+        "vault.readTimeout",
+        10,
+    )
+
+    verify_tls = _read_boolean_property(
+        properties,
+        (
+            "vault-ssl.verify",
+            "vault.ssl.verify",
+        ),
+        True,
+    )
+
+    return {
+        "cert": str(certificate_path),
+        "key": str(private_key_path),
+        "namespace": vault_namespace,
+        "role": certificate_role,
+        "login_url": f"{vault_address}/v1/auth/cert/login",
+        "secret_url": f"{vault_address}/v1/{vault_path}",
+        "verify": verify_tls,
+        "open_timeout": open_timeout,
+        "read_timeout": read_timeout,
+    }
+PY
