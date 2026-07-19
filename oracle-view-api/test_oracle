@@ -1,30 +1,32 @@
 cd /app/M50/m50-api-reporter
 
 /app/M50/m50-api-reporter/venv/bin/python - <<'PY'
-from app.database import get_connection
+from app.db import get_connection
 
-conn = None
-cur = None
+connection = None
+cursor = None
 
 try:
-    conn = get_connection()
-    cur = conn.cursor()
+    connection = get_connection()
+    cursor = connection.cursor()
 
-    cur.execute("""
-        SELECT USER,
-               (SELECT COUNT(*) FROM LC_SCMT.VW_API_REPORTER)
+    cursor.execute("""
+        SELECT
+            USER,
+            (SELECT COUNT(*) FROM LC_SCMT.VW_API_REPORTER)
         FROM dual
     """)
 
-    user, count = cur.fetchone()
+    session_user, row_count = cursor.fetchone()
 
     print("Oracle connection successful")
-    print("Connected user:", user)
-    print("VW_API_REPORTER rows:", count)
+    print("Session user:", session_user)
+    print("VW_API_REPORTER row count:", row_count)
 
 finally:
-    if cur:
-        cur.close()
-    if conn:
-        conn.close()
+    if cursor is not None:
+        cursor.close()
+
+    if connection is not None:
+        connection.close()
 PY
