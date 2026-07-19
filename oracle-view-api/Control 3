@@ -1,3 +1,13 @@
 grep -Ev '^[[:space:]]*(#|$)' /app/M50/m50-rcm-custom/bin/env/eva.config
 
 grep -nE 'curl|cert|key|namespace|role|login|secret|token' /app/M50/m50-rcm-custom/bin/deploy-user-pwd.sh
+
+---
+
+grep -i "vault" /app/M50/dyn/m50-tomcat/acm_repository.properties
+
+grep -i "cert" /app/M50/dyn/m50-tomcat/acm_repository.properties
+
+grep -i "key" /app/M50/dyn/m50-tomcat/acm_repository.properties
+
+grep -i "namespace" /app/M50/dyn/m50-tomcat/acm_repository.properties
