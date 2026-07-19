@@ -11,3 +11,7 @@ grep -i "cert" /app/M50/dyn/m50-tomcat/acm_repository.properties
 grep -i "key" /app/M50/dyn/m50-tomcat/acm_repository.properties
 
 grep -i "namespace" /app/M50/dyn/m50-tomcat/acm_repository.properties
+
+---
+
+nl -ba /app/M50/m50-rcm-custom/bin/deploy-user-pwd.sh | sed -n '1,40p'
