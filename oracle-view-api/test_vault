@@ -1,0 +1,10 @@
+cd /app/M50/m50-api-reporter
+
+/app/M50/m50-api-reporter/venv/bin/python - <<'PY'
+from app.vault import get_oracle_password
+
+password = get_oracle_password()
+
+print("Password successfully retrieved from Vault.")
+print("Password length:", len(password))
+PY
