@@ -1,0 +1,88 @@
+"""
+Runtime configuration for the Reporter API.
+
+The deployment environment is identified through the APP_ENV variable
+provided by the operating system.
+
+Oracle passwords are retrieved from EVA/Vault and are never stored locally.
+"""
+
+import os
+from urllib.parse import urlparse
+
+from app.vault import get_oracle_password
+
+
+class ConfigurationError(RuntimeError):
+    """Raised when the Reporter API runtime configuration is invalid."""
+
+
+ORACLE_ENVIRONMENTS = {
+    "ch-dev": {
+        "host": "INSERT_DEV_ORACLE_HOST",
+        "service": "INSERT_DEV_ORACLE_SERVICE",
+    },
+    "ch-te2": {
+        "host": "INSERT_TE2_ORACLE_HOST",
+        "service": "INSERT_TE2_ORACLE_SERVICE",
+    },
+    "ch-prd": {
+        "host": "INSERT_PROD_ORACLE_HOST",
+        "service": "INSERT_PROD_ORACLE_SERVICE",
+    },
+}
+
+
+def _get_app_env() -> str:
+    """Read and validate APP_ENV from the process environment."""
+    app_env = os.getenv("APP_ENV", "").strip().lower()
+
+    if not app_env:
+        raise ConfigurationError(
+            "APP_ENV is not defined. Expected one of: "
+            f"{', '.join(ORACLE_ENVIRONMENTS)}"
+        )
+
+    if app_env not in ORACLE_ENVIRONMENTS:
+        raise ConfigurationError(
+            f"Unsupported APP_ENV={app_env!r}. Expected one of: "
+            f"{', '.join(ORACLE_ENVIRONMENTS)}"
+        )
+
+    return app_env
+
+
+class Settings:
+    """Validated runtime settings for the Reporter API."""
+
+    def __init__(self) -> None:
+        self.APP_ENV = _get_app_env()
+
+        oracle_config = ORACLE_ENVIRONMENTS[self.APP_ENV]
+
+        self.ORACLE_USER = "LC_SCMT"
+        self.ORACLE_PASSWORD = get_oracle_password()
+        self.ORACLE_HOST = oracle_config["host"]
+        self.ORACLE_PORT = 1521
+        self.ORACLE_SERVICE = oracle_config["service"]
+
+        self.API_HOST = os.getenv("API_HOST", "127.0.0.1")
+        self.API_PORT = int(os.getenv("API_PORT", "8000"))
+
+        root_path = os.getenv("ROOT_PATH", "/reporter")
+        proxy_uri = os.getenv("VSCODE_PROXY_URI", "")
+
+        if not root_path and proxy_uri:
+            proxy_url = proxy_uri.replace("{{port}}", str(self.API_PORT))
+            root_path = urlparse(proxy_url).path
+
+        self.ROOT_PATH = (
+            root_path.rstrip("/")
+            if root_path not in ("", "/")
+            else root_path
+        )
+
+        self.LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
+
+settings = Settings()
