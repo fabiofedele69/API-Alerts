@@ -32,7 +32,7 @@ grep -Rns 'APP_ENV' /etc/profile /etc/profile.d /etc/environment /etc/sysconfig 
 grep -Rns 'CA_BUNDLE\|cacerts.pem\|verify=' /app/M50/m50-api-reporter/app
 
 
--- TEST --
+-- TEST EVA --
 
 /app/M50/m50-api-reporter/venv/bin/python - <<'PY'
 from app.eva import read_eva_config
@@ -46,4 +46,14 @@ print("Namespace configured:", bool(config["namespace"]))
 print("Role configured:", bool(config["role"]))
 print("Login URL configured:", bool(config["login_url"]))
 print("Secret URL configured:", bool(config["secret_url"]))
+PY
+
+-- TEST VAULT PASSWORD RETRIVAL --
+/app/M50/m50-api-reporter/venv/bin/python - <<'PY'
+from app.vault import get_oracle_password
+
+password = get_oracle_password()
+
+print("Vault password retrieved:", bool(password))
+print("Password length:", len(password))
 PY
