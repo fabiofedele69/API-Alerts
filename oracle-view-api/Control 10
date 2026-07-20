@@ -1,0 +1,33 @@
+STEP 2
+systemctl cat api-reporter
+
+systemctl show api-reporter | grep -E \
+'^(User|Group|WorkingDirectory|Environment|EnvironmentFiles|ExecStart|MainPID)='
+
+STEP 3
+env | grep '^APP_ENV='
+
+grep -Rns 'APP_ENV' \
+    /etc/profile \
+    /etc/profile.d \
+    /etc/environment \
+    /etc/sysconfig \
+    /app/M50 \
+    2>/dev/null
+
+STEP 4
+cat /app/M50/m50-api-reporter/config/api-reporter.env
+
+STEP 5
+grep -Rns 'CA_BUNDLE\|cacerts.pem\|verify=' \
+    /app/M50/m50-api-reporter/app
+
+grep -Ein \
+'cacert|ca.bundle|caCert|trust|verify|pem' \
+/app/M50/dyn/m50-tomcat/acm_repository.properties
+
+systemctl cat api-reporter
+env | grep '^APP_ENV='
+grep -Rns 'APP_ENV' /etc/profile /etc/profile.d /etc/environment /etc/sysconfig /app/M50 2>/dev/null
+grep -Rns 'CA_BUNDLE\|cacerts.pem\|verify=' /app/M50/m50-api-reporter/app
+
