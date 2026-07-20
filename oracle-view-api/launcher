@@ -36,3 +36,11 @@ exec "$APP_HOME/venv/bin/python" \
     --host 127.0.0.1 \
     --port 8000
 EOF
+
+
+
+
+bash -c '
+. /etc/profile.d/eccm_environment_variables.sh
+echo "APP_ENV=$APP_ENV"
+'
