@@ -1,0 +1,38 @@
+cat > bin/start-api-reporter.sh <<'EOF'
+#!/bin/bash
+
+set -euo pipefail
+
+APP_HOME="/app/M50/m50-api-reporter"
+OS_ENV_FILE="/etc/profile.d/eccm_environment_variables.sh"
+
+if [ ! -r "$OS_ENV_FILE" ]; then
+    echo "ERROR: OS environment file not readable: $OS_ENV_FILE" >&2
+    exit 1
+fi
+
+# Load APP_ENV and other platform variables supplied by the server.
+. "$OS_ENV_FILE"
+
+if [ -z "${APP_ENV:-}" ]; then
+    echo "ERROR: APP_ENV is not defined after loading $OS_ENV_FILE" >&2
+    exit 1
+fi
+
+case "$APP_ENV" in
+    ch-dev|ch-te2|ch-prd)
+        ;;
+    *)
+        echo "ERROR: Unsupported APP_ENV=$APP_ENV" >&2
+        exit 1
+        ;;
+esac
+
+cd "$APP_HOME"
+
+exec "$APP_HOME/venv/bin/python" \
+    -m uvicorn \
+    app.main:app \
+    --host 127.0.0.1 \
+    --port 8000
+EOF
