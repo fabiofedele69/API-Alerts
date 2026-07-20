@@ -31,3 +31,19 @@ env | grep '^APP_ENV='
 grep -Rns 'APP_ENV' /etc/profile /etc/profile.d /etc/environment /etc/sysconfig /app/M50 2>/dev/null
 grep -Rns 'CA_BUNDLE\|cacerts.pem\|verify=' /app/M50/m50-api-reporter/app
 
+
+-- TEST --
+
+/app/M50/m50-api-reporter/venv/bin/python - <<'PY'
+from app.eva import read_eva_config
+
+config = read_eva_config()
+
+print("Certificate:", config["cert"])
+print("Private key:", config["key"])
+print("CA bundle:", config["ca_bundle"])
+print("Namespace configured:", bool(config["namespace"]))
+print("Role configured:", bool(config["role"]))
+print("Login URL configured:", bool(config["login_url"]))
+print("Secret URL configured:", bool(config["secret_url"]))
+PY
