@@ -15,4 +15,7 @@ exec "$APP_HOME/venv/bin/python" \
     --port 8000
 
 
-sudo -u um501001 bash -c 'export LD_LIBRARY_PATH=/app/M50/m50-openssl-1.1.1w/lib:${LD_LIBRARY_PATH:-} /app/M50/m50-api-reporter/venv/bin/python -c "import ssl; print(ssl.OPENSSL_VERSION)"'
+sudo -u um501001 bash -c '
+export LD_LIBRARY_PATH=/app/M50/m50-openssl-1.1.1w/lib:${LD_LIBRARY_PATH:-}
+/app/M50/m50-api-reporter/venv/bin/python -c "import ssl; print(ssl.OPENSSL_VERSION)"
+'
