@@ -1,6 +1,6 @@
 set -euo pipefail
 
-export LD_LIBRARY_PATH=/app/M50/openssl-1.1.1w/lib:/opt/CA/SharedComponents/Csam/SockAdapter/lib:/opt/CA/SharedComponents/Csam/SockAdapter/lib64:${LD_LIBRARY_PATH:-}
+export LD_LIBRARY_PATH=/app/M50/m50-openssl-1.1.1w/lib:/opt/CA/SharedComponents/Csam/SockAdapter/lib:/opt/CA/SharedComponents/Csam/SockAdapter/lib64:${LD_LIBRARY_PATH:-}
 
 ...
 
