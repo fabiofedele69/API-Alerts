@@ -1,0 +1,23 @@
+cat > /etc/systemd/system/api-reporter.service <<'EOF'
+[Unit]
+Description=FCSCMT Reporter API
+After=network.target
+
+[Service]
+Type=simple
+User=m501001
+Group=m501001
+
+WorkingDirectory=/app/M50/m50-api-reporter
+
+ExecStart=/app/M50/m50-api-reporter/bin/start-api-reporter.sh
+
+Restart=on-failure
+RestartSec=5
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
