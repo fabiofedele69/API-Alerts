@@ -57,3 +57,19 @@ password = get_oracle_password()
 print("Vault password retrieved:", bool(password))
 print("Password length:", len(password))
 PY
+
+
+-- EXTRA TEST --
+/app/M50/m50-api-reporter/venv/bin/python - <<'PY'
+from app.config import settings
+
+print("APP_ENV:", settings.APP_ENV)
+print("Oracle user:", settings.ORACLE_USER)
+print("Oracle host:", settings.ORACLE_HOST)
+print("Oracle port:", settings.ORACLE_PORT)
+print("Oracle service:", settings.ORACLE_SERVICE)
+print("Password retrieved:", bool(settings.ORACLE_PASSWORD))
+print("API host:", settings.API_HOST)
+print("API port:", settings.API_PORT)
+print("Root path:", settings.ROOT_PATH)
+PY
