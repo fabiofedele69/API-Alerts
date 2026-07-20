@@ -73,3 +73,17 @@ print("API host:", settings.API_HOST)
 print("API port:", settings.API_PORT)
 print("Root path:", settings.ROOT_PATH)
 PY
+
+
+/app/M50/m50-api-reporter/venv/bin/python - <<'PY'
+from app.db import get_connection
+
+connection = get_connection()
+
+try:
+    cursor = connection.cursor()
+    cursor.execute("SELECT USER, SYS_CONTEXT('USERENV', 'DB_NAME') FROM dual")
+    print("Oracle test:", cursor.fetchone())
+finally:
+    connection.close()
+PY
