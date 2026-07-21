@@ -1,0 +1,11 @@
+cd /app/M50/m50-api-reporter
+pwd
+find . -maxdepth 3 -type f \
+  -not -path './venv/*' \
+  -not -path './logs/*' \
+  -not -path './logs_backup/*' \
+  -not -path '*/__pycache__/*' \
+  -not -name '*.pyc' \
+  | sort
+
+find . -maxdepth 2 -type d | sort
