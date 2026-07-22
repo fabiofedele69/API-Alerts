@@ -1,0 +1,13 @@
+.m50-api-reporter-module:
+  variables:
+    MODULE: m50-api-reporter
+    MODULE_ROOT: scmt-reporter-api/deploy
+    ARTIFACT_PATTERN: "${MODULE_ROOT}/target/*.zip"
+    DEPLOY_ENV_SUFFIX: RFI
+
+.m50-api-reporter-config-module:
+  variables:
+    MODULE: m50-api-reporter-config
+    MODULE_ROOT: scmt-reporter-api/config
+    ARTIFACT_PATTERN: "${MODULE_ROOT}/target/*.zip"
+    DEPLOY_ENV_SUFFIX: RFI
