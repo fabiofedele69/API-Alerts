@@ -1,7 +1,7 @@
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0
-                              http://maven.apache.org/xsd/assembly-2.1.0.xsd">
+                              https://maven.apache.org/xsd/assembly-2.1.0.xsd">
 
     <id>deploy</id>
 
@@ -11,31 +11,49 @@
 
     <includeBaseDirectory>false</includeBaseDirectory>
 
-    <!-- Python application -->
     <fileSets>
 
+        <!-- Place Python modules directly under app/ so app.main:app works. -->
         <fileSet>
-            <directory>${project.parent.basedir}/app/src/main/python</directory>
+            <directory>${project.parent.basedir}/app/src/main/python/reporter</directory>
             <outputDirectory>app</outputDirectory>
+            <includes>
+                <include>**/*.py</include>
+            </includes>
+            <fileMode>0644</fileMode>
+            <directoryMode>0755</directoryMode>
         </fileSet>
 
+        <!-- Runtime and installation scripts. -->
         <fileSet>
             <directory>${project.parent.basedir}/deploy/src/bin</directory>
             <outputDirectory>bin</outputDirectory>
+            <includes>
+                <include>*.sh</include>
+            </includes>
             <fileMode>0755</fileMode>
+            <directoryMode>0755</directoryMode>
         </fileSet>
 
+        <!-- systemd unit. -->
         <fileSet>
             <directory>${project.parent.basedir}/deploy/src/services</directory>
             <outputDirectory>services</outputDirectory>
+            <includes>
+                <include>*.service</include>
+            </includes>
+            <fileMode>0644</fileMode>
+            <directoryMode>0755</directoryMode>
         </fileSet>
 
+        <!-- Python dependencies. -->
         <fileSet>
-            <directory>${project.parent.basedir}</directory>
+            <directory>${project.parent.basedir}/app</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
                 <include>requirements.txt</include>
             </includes>
+            <fileMode>0644</fileMode>
         </fileSet>
 
     </fileSets>
