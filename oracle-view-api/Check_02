@@ -34,3 +34,18 @@ publish-m50-api-reporter-rpm:
     UBSCTL_FINGERPRINT_ARTIFACTS: ${ARTIFACT_PATTERN}
   rules:
     - if: '$CI_COMMIT_TAG =~ /^m50-api-reporter-v\d+(\.\d+)+$/'
+
+
+if [[ ! -x "${APP_HOME}/venv/bin/python" ]]; then
+    echo "Creating Python virtual environment..."
+    rm -rf "${APP_HOME}/venv"
+    "${PYTHON_BIN}" -m venv "${APP_HOME}/venv"
+
+    echo "Installing Python dependencies..."
+    "${APP_HOME}/venv/bin/python" -m pip install \
+        --disable-pip-version-check \
+        -r "${APP_HOME}/requirements.txt"
+else
+    echo "Existing Python virtual environment found."
+    echo "Skipping dependency installation."
+fi
