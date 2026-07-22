@@ -67,3 +67,20 @@ grep -Ei '^(fastapi|uvicorn|oracledb|python-dotenv|openpyxl|requests)=='
 
 
 grep -nEi "build|package|artifact|zip|tar|nexus|publish|pip" .gitlab-ci.yml
+
+
+grep -RniE "pypi|pip.conf|PIP_INDEX_URL|PIP_EXTRA_INDEX_URL|trusted-host" .
+
+grep -RniE "pypi|pip.conf|PIP_INDEX_URL|PIP_EXTRA_INDEX_URL|trusted-host" .
+
+python3 -m pip index versions fastapi \
+  --index-url "${PIP_INDEX_URL}"
+
+mkdir -p /tmp/test-wheels
+
+python3 -m pip download \
+  --index-url "${PIP_INDEX_URL}" \
+  --dest /tmp/test-wheels \
+  fastapi==0.139.0
+
+
