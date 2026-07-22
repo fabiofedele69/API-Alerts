@@ -112,3 +112,15 @@ python -m pip download \
   --index-url https://it4it-nexus-tp-repo.swissbank.com/repository/public-lib-python-pypi/simple \
   --dest /tmp/api-reporter-wheels \
   --requirement /app/M50/m50-api-reporter/requirements.txt
+
+
+<!-- Offline Python dependency wheels. -->
+<fileSet>
+    <directory>${project.parent.basedir}/deploy/src/wheels</directory>
+    <outputDirectory>wheels</outputDirectory>
+    <includes>
+        <include>*.whl</include>
+    </includes>
+    <fileMode>0644</fileMode>
+    <directoryMode>0755</directoryMode>
+</fileSet>
