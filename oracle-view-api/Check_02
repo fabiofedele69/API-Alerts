@@ -49,3 +49,12 @@ else
     echo "Existing Python virtual environment found."
     echo "Skipping dependency installation."
 fi
+
+
+/app/M50/m50-api-reporter/venv/bin/python -m pip show \
+fastapi \
+uvicorn \
+oracledb \
+python-dotenv \
+openpyxl \
+requests
