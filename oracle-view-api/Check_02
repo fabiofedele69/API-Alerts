@@ -168,3 +168,10 @@ fi
     --cert "${CA_BUNDLE}" \
     --index-url "${PYPI_INDEX_URL}" \
     -r "${APP_HOME}/requirements.txt"
+
+
+grep -nE "CA_BUNDLE|PYPI_INDEX_URL|pip install|index-url" \
+scmt-reporter-api/deploy/src/bin/install-api-reporter.sh
+
+grep -nE '\\[[:space:]]+$' \
+scmt-reporter-api/deploy/src/bin/install-api-reporter.sh
