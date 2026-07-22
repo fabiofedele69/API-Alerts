@@ -84,3 +84,5 @@ python3 -m pip download \
   fastapi==0.139.0
 
 
+curl -I \
+https://it4it-nexus-tp-repo.swissbank.com/repository/public-lib-python-pypi/simple/fastapi/
