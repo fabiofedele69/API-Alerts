@@ -13,29 +13,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>scmt-reporter-api-app</artifactId>
+    <artifactId>m50-api-reporter-app</artifactId>
+
     <packaging>pom</packaging>
-
-    <name>FCSCMT Reporter API Application</name>
-    <description>Python FastAPI application source for the FCSCMT Reporter API</description>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>${project.basedir}/src/main/python</directory>
-                <filtering>false</filtering>
-                <targetPath>python</targetPath>
-            </resource>
-
-            <resource>
-                <directory>${project.basedir}</directory>
-                <filtering>false</filtering>
-                <targetPath>python</targetPath>
-                <includes>
-                    <include>requirements.txt</include>
-                </includes>
-            </resource>
-        </resources>
-    </build>
 
 </project>
