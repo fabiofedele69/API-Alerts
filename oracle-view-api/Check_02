@@ -132,3 +132,11 @@ CA_BUNDLE="/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
     --disable-pip-version-check \
     --cert "${CA_BUNDLE}" \
     -r "${APP_HOME}/requirements.txt"
+
+
+CA_BUNDLE="/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
+
+if [[ ! -f "${CA_BUNDLE}" ]]; then
+    echo "ERROR: CA bundle not found: ${CA_BUNDLE}" >&2
+    exit 1
+fi
