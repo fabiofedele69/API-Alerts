@@ -13,7 +13,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>scmt-reporter-api-config</artifactId>
+    <artifactId>m50-api-reporter-config</artifactId>
+
     <packaging>pom</packaging>
 
 </project>
