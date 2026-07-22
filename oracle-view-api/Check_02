@@ -86,3 +86,15 @@ python3 -m pip download \
 
 curl -I \
 https://it4it-nexus-tp-repo.swissbank.com/repository/public-lib-python-pypi/simple/fastapi/
+
+
+
+python3 -m pip download \
+  --index-url https://it4it-nexus-tp-repo.swissbank.com/repository/public-lib-python-pypi/simple \
+  --dest /tmp/test-wheel \
+  fastapi==0.139.0
+
+/app/M50/m50-python-3.10.15/bin/python3 -m pip download \
+  --index-url https://it4it-nexus-tp-repo.swissbank.com/repository/public-lib-python-pypi/simple \
+  --dest /tmp/test-wheel \
+  fastapi==0.139.0
