@@ -58,3 +58,7 @@ oracledb \
 python-dotenv \
 openpyxl \
 requests
+
+
+/app/M50/m50-api-reporter/venv/bin/python -m pip freeze | \
+grep -Ei '^(fastapi|uvicorn|oracledb|python-dotenv|openpyxl|requests)=='
