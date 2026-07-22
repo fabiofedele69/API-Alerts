@@ -1,0 +1,21 @@
+
+grep -Rni \
+  --include='.gitlab-ci.yml' \
+  --include='*.yml' \
+  --include='*.yaml' \
+  "DEPLOY_ENV_SUFFIX" \
+  .gitlab-ci.yml \
+  scmt-internal-api \
+  scmt-rex-ansible \
+  scmt-ubs-deploy-* \
+  scmt-rpm-* \
+  2>/dev/null
+
+grep -Rho \
+  --include='.gitlab-ci.yml' \
+  --include='*.yml' \
+  --include='*.yaml' \
+  'DEPLOY_ENV_SUFFIX:[[:space:]]*[A-Za-z0-9_-]*' \
+  .gitlab-ci.yml \
+  scmt-* \
+  2>/dev/null | sort -u
