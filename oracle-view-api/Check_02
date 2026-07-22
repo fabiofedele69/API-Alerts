@@ -1,0 +1,14 @@
+grep -Rni \
+  --include='.gitlab-ci.yml' \
+  '^\.publish-module:' \
+  ci . \
+  2>/dev/null | head -20
+
+sed -n '140,200p' ci/.gitlab-ci.yml
+
+bash -n scmt-reporter-api/deploy/src/bin/install-api-reporter.sh
+bash -n scmt-reporter-api/deploy/src/bin/start-api-reporter.sh
+git diff --check
+
+git status --short
+git diff --stat
