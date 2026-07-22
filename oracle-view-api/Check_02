@@ -142,3 +142,29 @@ if [[ ! -f "${CA_BUNDLE}" ]]; then
 fi
 
 CA_BUNDLE="${CA_BUNDLE:-/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem}"
+
+
+
+if [[ ! -d "${APP_HOME}/venv" ]]; then
+    echo "Creating Python virtual environment..."
+    rm -rf "${APP_HOME}/venv"
+    "${PYTHON_BIN}" -m venv "${APP_HOME}/venv"
+else
+    echo "Existing Python virtual environment found."
+fi
+
+echo "Installing/updating Python dependencies..."
+
+CA_BUNDLE="${CA_BUNDLE:-/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem}"
+PYPI_INDEX_URL="${PYPI_INDEX_URL:-https://it4it-nexus-tp-repo.swissbank.com/repository/public-lib-python-pypi/simple}"
+
+if [[ ! -f "${CA_BUNDLE}" ]]; then
+    echo "ERROR: CA bundle not found: ${CA_BUNDLE}" >&2
+    exit 1
+fi
+
+"${APP_HOME}/venv/bin/python" -m pip install \
+    --disable-pip-version-check \
+    --cert "${CA_BUNDLE}" \
+    --index-url "${PYPI_INDEX_URL}" \
+    -r "${APP_HOME}/requirements.txt"
