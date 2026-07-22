@@ -10,5 +10,16 @@ bash -n scmt-reporter-api/deploy/src/bin/install-api-reporter.sh
 bash -n scmt-reporter-api/deploy/src/bin/start-api-reporter.sh
 git diff --check
 
+for file in \
+  scmt-reporter-api/app/requirements.txt \
+  scmt-reporter-api/deploy/assembly.xml \
+  scmt-reporter-api/deploy/src/bin/install-api-reporter.sh \
+  scmt-reporter-api/deploy/src/bin/start-api-reporter.sh \
+  scmt-reporter-api/deploy/src/services/api-reporter.service
+do
+  test -f "$file" && echo "OK: $file" || echo "MISSING: $file"
+done
+
+
 git status --short
 git diff --stat
