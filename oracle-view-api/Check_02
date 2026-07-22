@@ -124,3 +124,11 @@ python -m pip download \
     <fileMode>0644</fileMode>
     <directoryMode>0755</directoryMode>
 </fileSet>
+
+
+CA_BUNDLE="/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
+
+"${APP_HOME}/venv/bin/python" -m pip install \
+    --disable-pip-version-check \
+    --cert "${CA_BUNDLE}" \
+    -r "${APP_HOME}/requirements.txt"
