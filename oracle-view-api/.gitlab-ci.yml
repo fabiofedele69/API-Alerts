@@ -1,0 +1,6 @@
+publish-m50-api-reporter:
+  extends:
+    - .m50-api-reporter-module
+    - .publish-module
+  rules:
+    - if: '$PUBLISH == "m50-api-reporter"'
