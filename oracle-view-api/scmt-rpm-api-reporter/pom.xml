@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.ubs.fcscmt</groupId>
+        <artifactId>scmt-rpm-root</artifactId>
+        <version>3.0.0-SNAPSHOT</version>
+        <relativePath>../scmt-rpm-root/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>scmt-rpm-api-reporter</artifactId>
+    <description>FC SCMT RPM for API Reporter</description>
+    <packaging>pom</packaging>
+
+    <properties>
+        <app.pkgid>m50-api-reporter</app.pkgid>
+        <app.user>um501001</app.user>
+        <app.group>gm501001</app.group>
+        <app.install.dir>/app/M50/m50-api-reporter</app.install.dir>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ubs.fcscmt</groupId>
+            <artifactId>m50-api-reporter</artifactId>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-api-reporter</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeArtifactIds>m50-api-reporter</includeArtifactIds>
+                            <includeTypes>zip</includeTypes>
+                            <excludeTransitive>true</excludeTransitive>
+                            <outputDirectory>
+                                ${project.build.outputDirectory}/m50-api-reporter
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>rpm-maven-plugin</artifactId>
+                <configuration>
+                    <requires>
+                        <require>ubs-packaging</require>
+                    </requires>
+
+                    <mappings>
+                        <mapping>
+                            <directory>${app.install.dir}</directory>
+                            <username>${app.user}</username>
+                            <groupname>${app.group}</groupname>
+                            <filemode>0755</filemode>
+                            <directoryIncluded>true</directoryIncluded>
+                            <sources>
+                                <source>
+                                    <location>
+                                        ${project.build.outputDirectory}/m50-api-reporter
+                                    </location>
+                                </source>
+                            </sources>
+                        </mapping>
+                    </mappings>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
