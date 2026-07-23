@@ -1,0 +1,15 @@
+for f in scmt-rpm-api-reporter/src/scriptlets/*.sh; do
+    echo "Checking $f"
+    bash -n "$f" || exit 1
+done
+
+echo "All scriptlets are syntactically OK."
+
+grep -nEi "RCM|acm|plugin|xsl|op-commands" \
+scmt-rpm-api-reporter/src/scriptlets/*.sh
+
+git add scmt-rpm-api-reporter/src/scriptlets
+git status
+
+git commit -m "issue-6446: add API Reporter RPM lifecycle scriptlets"
+git push
