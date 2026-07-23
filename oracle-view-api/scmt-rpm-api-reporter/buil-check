@@ -1,0 +1,51 @@
+    - |
+      if [[ "${MODULE}" == "scmt-rpm-api-reporter" ]]; then
+        echo "=== API Reporter RPM diagnostics ==="
+        echo "MODULE=${MODULE}"
+        echo "MODULE_ROOT=${MODULE_ROOT}"
+        echo "PATH=${PATH}"
+
+        echo "--- Python executable locations ---"
+        command -v python || true
+        command -v python2 || true
+        command -v python3 || true
+
+        echo "--- Python versions ---"
+        python --version 2>&1 || true
+        python2 --version 2>&1 || true
+        python3 --version 2>&1 || true
+
+        echo "--- RPM macro values ---"
+        rpm --eval '%{_python_bytecompile_errors_terminate_build}' || true
+        rpm --eval '%{__brp_python_bytecompile}' || true
+      fi
+
+      set +e
+      mvn $MAVEN_CLI_OPTS -pl :${MODULE} -am package
+      MAVEN_RC=$?
+      set -e
+
+      if [[ "${MODULE}" == "scmt-rpm-api-reporter" ]]; then
+        echo "=== Generated SPEC diagnostics ==="
+
+        SPEC_FILE="${MODULE_ROOT}/target/rpm/m50-api-reporter/SPECS/m50-api-reporter.spec"
+
+        if [[ -f "${SPEC_FILE}" ]]; then
+          echo "SPEC file found: ${SPEC_FILE}"
+
+          grep -nE \
+            "python_bytecompile|brp-python|os_install_post|_python_bytecompile_errors" \
+            "${SPEC_FILE}" || true
+
+          echo "--- Beginning of generated SPEC ---"
+          sed -n '1,120p' "${SPEC_FILE}" || true
+        else
+          echo "Expected SPEC file not found: ${SPEC_FILE}"
+          echo "Available SPEC files:"
+          find "${MODULE_ROOT}/target" -name "*.spec" -print 2>/dev/null || true
+        fi
+      fi
+
+      if [[ "${MAVEN_RC}" -ne 0 ]]; then
+        exit "${MAVEN_RC}"
+      fi
