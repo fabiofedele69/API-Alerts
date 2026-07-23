@@ -1,0 +1,13 @@
+.m50-api-reporter-rpm:
+  variables:
+    MODULE: scmt-rpm-api-reporter
+    MODULE_ROOT: scmt-rpm-api-reporter
+    ARTIFACT_PATTERN: "${MODULE_ROOT}/target/*.rpm"
+
+
+publish-m50-api-reporter-rpm:
+  extends:
+    - .m50-api-reporter-rpm
+    - .publish-rpm-module
+  rules:
+    - if: '$PUBLISH == "m50-api-reporter-rpm"'
