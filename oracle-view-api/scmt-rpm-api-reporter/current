@@ -11,3 +11,11 @@ publish-m50-api-reporter-rpm:
     - .publish-rpm-module
   rules:
     - if: '$PUBLISH == "m50-api-reporter-rpm"'
+
+
+<dependency>
+    <groupId>com.ubs.fcscmt</groupId>
+    <artifactId>m50-api-reporter</artifactId>
+    <version>${project.version}</version>
+    <type>zip</type>
+</dependency>
