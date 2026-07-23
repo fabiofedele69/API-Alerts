@@ -1,0 +1,32 @@
+<plugins>
+
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+
+        <configuration>
+            <descriptors>
+                <descriptor>assembly.xml</descriptor>
+            </descriptors>
+        </configuration>
+
+        <executions>
+            <execution>
+                <id>build-deployment-zip</id>
+                <phase>package</phase>
+                <goals>
+                    <goal>single</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+            <skip>false</skip>
+        </configuration>
+    </plugin>
+
+</plugins>
