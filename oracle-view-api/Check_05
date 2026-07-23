@@ -1,0 +1,8 @@
+grep -Rni \
+  --exclude-dir=.git \
+  -E "get_url:|unarchive:|nexus|artifactmgmt|maven_artifact|\\.zip" \
+  scmt-rex-ansible/src/main/ansible
+
+cat scmt-rex-ansible/src/main/ansible/inventories/te2/RO/hosts
+
+cat scmt-rex-ansible/src/main/ansible/inventories/te2/RO/group_vars/rcm.yml
