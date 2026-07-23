@@ -16,3 +16,10 @@ grep -nA14 -B3 "publish-.*-rel:" .gitlab-ci.yml | head -100
 sed -n '/^\.publish-module:/,/^[^.]/p' ci/.gitlab-ci.yml
 
 grep -n "^\.publish-module:" -A80 ci/.gitlab-ci.yml
+
+
+---
+grep -nA80 -B20 "<build>" scmt-reporter-api/deploy/pom.xml
+
+grep -nE "assembly|deploy|attach|artifact|distributionManagement|plugin" \
+scmt-reporter-api/deploy/pom.xml
