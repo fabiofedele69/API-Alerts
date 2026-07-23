@@ -32,3 +32,19 @@ find scmt-reporter-api/deploy/target -maxdepth 1 -type f
 grep -Rni "distributionManagement" .
 
 grep -Rni "maven-deploy-plugin" .
+----------------
+
+grep -Rni \
+  --exclude-dir=.git \
+  --include="pom.xml" \
+  -E "maven\.deploy\.skip|<skip>true</skip>|<skip>false</skip>|deploy.skip" .
+
+
+sed -n '830,900p' pom.xml
+
+grep -nE "maven-deploy-plugin.version|maven.deploy.skip|deploy.skip" pom.xml
+
+grep -Rni \
+  --exclude-dir=.git \
+  --include="pom.xml" \
+  "m50-rcm-actimize" .
