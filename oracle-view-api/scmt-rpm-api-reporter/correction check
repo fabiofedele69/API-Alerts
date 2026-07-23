@@ -1,0 +1,9 @@
+grep -RniE "__brp_python_bytecompile|brp-python-bytecompile|__os_install_post" \
+  . \
+  --include="pom.xml" \
+  --include="*.spec" \
+  2>/dev/null
+
+grep -RniE "define|defines|rpmbuild|rpm-maven-plugin" \
+  scmt-rpm-root/pom.xml \
+  scmt-rpm-api-reporter/pom.xml
