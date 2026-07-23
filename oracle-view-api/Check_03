@@ -1,0 +1,11 @@
+
+grep -nA8 -B2 "publish-m50-api-reporter" .gitlab-ci.yml
+
+grep -n "^\.publish-module:" ci/.gitlab-ci.yml
+
+grep -RniE "maven.deploy.skip|deploy.skip|skip.*deploy" \
+  --include="pom.xml" \
+  --include="*.yml" \
+  scmt-reporter-api pom.xml ci .gitlab-ci.yml
+
+grep -nA14 -B3 "publish-.*-rel:" .gitlab-ci.yml | head -100
