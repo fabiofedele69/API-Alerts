@@ -1,3 +1,15 @@
+.build-rpm-module:
+  stage: build
+  image: ${IMAGE_WMPC_BUILD}
+  script:
+    - ci/update_toolchains.sh
+    - echo "Building ${MODULE}..."
+    - ci/match_tag_version.sh rpm "${CI_COMMIT_TAG}" "${MODULE}"
+    - MVN="mvn -q ${MAVEN_CLI_STD_OPTS} -DforceStdout"
+    - >
+      RFC_NUMBER=$(${MVN} help:evaluate -Dexpression=rfc.no -pl :${MODULE} 2>&1) ||
+      { echo "Error evaluating RFC:" && echo "${RFC_NUMBER}" && false; }
+    - echo "RFC\u0003A ${RFC_NUMBER}"
     - |
       if [[ "${MODULE}" == "scmt-rpm-api-reporter" ]]; then
         echo "=== API Reporter RPM diagnostics ==="
@@ -15,9 +27,13 @@
         python2 --version 2>&1 || true
         python3 --version 2>&1 || true
 
-        echo "--- RPM macro values ---"
+        echo "--- Python binaries ---"
+        ls -l /usr/bin/python* 2>/dev/null || true
+
+        echo "--- RPM macro values before build ---"
         rpm --eval '%{_python_bytecompile_errors_terminate_build}' || true
         rpm --eval '%{__brp_python_bytecompile}' || true
+        rpm --eval '%{__os_install_post}' || true
       fi
 
       set +e
@@ -33,6 +49,7 @@
         if [[ -f "${SPEC_FILE}" ]]; then
           echo "SPEC file found: ${SPEC_FILE}"
 
+          echo "--- Relevant SPEC definitions ---"
           grep -nE \
             "python_bytecompile|brp-python|os_install_post|_python_bytecompile_errors" \
             "${SPEC_FILE}" || true
@@ -49,3 +66,31 @@
       if [[ "${MAVEN_RC}" -ne 0 ]]; then
         exit "${MAVEN_RC}"
       fi
+
+      RPM_FILES=( $(find "${MODULE_ROOT}/target/rpm" -name "*.rpm") )
+
+      for rpm_file in "${RPM_FILES[@]}"; do
+        mv "${rpm_file}" "${MODULE_ROOT}/target/"
+      done
+
+      RPM_FILES=( $(find "${MODULE_ROOT}/target" -name "*.rpm") )
+
+      BUILD_INFO_SCRIPT="${MODULE_ROOT}/target/BUILD_INFO.sh"
+      cat << EOF > "${BUILD_INFO_SCRIPT}"
+      export RFC_NUMBER=${RFC_NUMBER}
+      RPM_FILES=(
+      EOF
+
+      for file in "${RPM_FILES[@]}"; do
+        printf '  %q\n' "${file}" >> "${BUILD_INFO_SCRIPT}"
+      done
+
+      cat << EOF >> "${BUILD_INFO_SCRIPT}"
+      )
+      export RPM_FILES
+      EOF
+
+  artifacts:
+    paths:
+      - "${MODULE_ROOT}/target/BUILD_INFO.sh"
+      - "${ARTIFACT_PATTERN}"
