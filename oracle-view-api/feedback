@@ -1,0 +1,9 @@
+The API Reporter is deployed on the RCM1/RCM2 nodes, so I attached its installation to the RCM Ansible role.
+
+I kept it as a separate RPM because it is an independent Python service with its own systemd unit, runtime dependencies, configuration, versioning and lifecycle. The m50-rcm-custom RPM mainly contains RCM customizations such as plugins, APFs and VFS components that are deployed into the RCM/Tomcat application.
+
+Including the API Reporter files directly inside m50-rcm-custom would couple two technically different components and would require rebuilding and upgrading the full RCM custom package whenever only the API Reporter changes. A separate RPM also provides cleaner installation, rollback and service management.
+
+The RCM role still deploys both components together, so operationally they remain coupled where required, while their packaging and versions remain independent.
+
+If by “included in the rcm-custom RPM” you mean declaring m50-api-reporter as an RPM dependency of m50-rcm-custom, that is technically possible. However, it would create a hard package dependency between components that do not directly depend on each other at runtime. I therefore preferred managing both packages explicitly in the RCM Ansible role.
