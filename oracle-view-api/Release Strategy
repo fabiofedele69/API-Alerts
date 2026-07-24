@@ -1,0 +1,208 @@
+API Reporter and Ansible release strategy
+
+After the Merge Request is approved and merged into develop, manage two independent releases:
+
+the API Reporter RPM release
+the Ansible/REX release
+
+They do not need to use the same version number.
+
+Phase 1 — Merge into develop
+
+Once approvals are complete:
+
+1. Merge the MR into: develop
+2. Wait for the develop pipeline to finish.
+3. Confirm that all required build jobs are green.
+
+At this point, the source code, RPM module, and Ansible integration are present on develop, but this does not necessarily mean both release artifacts have already been published.
+
+Phase 2 — Release the API Reporter RPM
+
+The Reporter RPM uses tags such as: m50-api-reporter-rpm-v3.0.0
+The GitLab rules already recognize this pattern: m50-api-reporter-rpm-v<version>
+
+Step 1 — Update your local develop
+After the MR is merged:
+git checkout develop
+git pull origin develop
+Confirm that you are on the correct commit:
+git status
+git log --oneline -5
+The working tree should be clean.
+
+Step 2 — Check existing Reporter tags
+git tag --list "m50-api-reporter-rpm-v*" --sort=-v:refname | head -10
+If the latest tag is: m50-api-reporter-rpm-v3.0.1 or: m50-api-reporter-rpm-v3.1.0
+However, if the pipeline derives the RPM release number independently, the tag may remain at an application version while the RPM filename increments its release number.
+
+Step 3 — Create the Reporter release tag
+Example:
+git tag m50-api-reporter-rpm-v3.0.1
+Verify it:
+git show m50-api-reporter-rpm-v3.0.1 --no-patch
+Push it:
+git push origin m50-api-reporter-rpm-v3.0.1
+This should trigger the Reporter RPM release pipeline.
+
+Step 4 — Validate the Reporter pipeline
+Verify that the jobs run successfully, especially:
+build-m50-api-reporter-rpm
+publish-m50-api-reporter-rpm
+Open the build or publish log and identify the exact generated RPM filename, for example:
+m50-api-reporter-3.0.0-9.el7.ubs.noarch.rpm
+The important Ansible version value is the part before .noarch.rpm:
+3.0.0-9.el7.ubs
+Also verify that the RPM is available in the YUM repository used by the RCM Ansible role.
+
+Phase 3 — Align the Ansible inventory version
+The Ansible inventories currently contain something like: api_reporter_version: 3.0.0-8.el7.ubs
+Compare that value with the RPM that was actually published.
+
+If the new RPM is still version 8
+No inventory update is needed: api_reporter_version: 3.0.0-8.el7.ubs
+
+If the new RPM is version 9
+Update all three inventory files:
+scmt-rex-ansible/src/main/ansible/inventories/dev/CX/group_vars/rcm.yml
+scmt-rex-ansible/src/main/ansible/inventories/te2/R0/group_vars/rcm.yml
+scmt-rex-ansible/src/main/ansible/inventories/prd/P0/group_vars/rcm.yml
+
+Change:
+api_reporter_version: 3.0.0-8.el7.ubs to api_reporter_version: 3.0.0-9.el7.ubs
+
+Validate:
+git grep -n "api_reporter_version"
+git diff --check
+git diff
+
+Then commit and push:
+git add \
+  scmt-rex-ansible/src/main/ansible/inventories/dev/CX/group_vars/rcm.yml \
+  scmt-rex-ansible/src/main/ansible/inventories/te2/R0/group_vars/rcm.yml \
+  scmt-rex-ansible/src/main/ansible/inventories/prd/P0/group_vars/rcm.yml
+
+git commit -m "issue-6446: Update API Reporter RPM version for deployment"
+git push origin develop
+
+Direct pushes to develop may be blocked. In that case, create a small follow-up branch and MR instead.
+
+The critical rule is:
+api_reporter_version
+must exactly match the RPM version published in the YUM repository.
+
+Phase 4 — Release Ansible for REX
+After the Ansible code and final Reporter RPM version are present on develop, create a new Ansible release.
+The existing Ansible tags follow this pattern:
+m50-ansible-v3.0.0.66
+m50-ansible-v3.0.0.65
+
+Step 1 — Update local develop
+git checkout develop
+git pull origin develop
+git status
+
+The working tree must be clean.
+
+Step 2 — Find the latest Ansible release tag
+
+git tag --list "m50-ansible-v*" --sort=-v:refname | head -10
+If the latest tag is:
+m50-ansible-v3.0.0.66
+the next release would normally be: m50-ansible-v3.0.0.67
+
+Step 3 — Create the Ansible tag from develop
+git tag m50-ansible-v3.0.0.67
+Verify the tag points to the intended develop commit:
+git show m50-ansible-v3.0.0.67 --no-patch
+Then push it:
+git push origin m50-ansible-v3.0.0.67
+This tag should trigger the Ansible release pipeline.
+
+Step 4 — Validate the Ansible release
+Confirm that the pipeline:
+
+builds the Ansible artifact;
+publishes it successfully;
+makes the new version available to REX.
+
+The Reporter RPM and the Ansible release can therefore look like:
+
+Reporter RPM:
+m50-api-reporter-3.0.0-9.el7.ubs.noarch.rpm
+Ansible release:
+m50-ansible-v3.0.0.67
+
+These versions are intentionally independent.
+
+Phase 5 — Deploy through REX
+Once both releases are available:
+
+1. Open REX.
+2. Select the new Ansible release, for example:
+  m50-ansible-v3.0.0.67
+3. Select the TE2 environment.
+4. Use the RCM target or limit, according to the existing REX configuration: RCM
+5. Review the target hosts carefully. It should include the intended RCM servers, typically RCM1 and RCM2.
+6. Start the deployment.
+
+The RCM role will evaluate this task:
+- name: Install API Reporter Package
+  yum:
+    name:
+      - "m50-api-reporter-{{ api_reporter_version }}.noarch"
+    state: present
+
+Expected behavior:
+- package absent → installed;
+- different configured version → upgraded or downgraded;
+- exact version already installed → task returns ok, with no package transaction.
+
+Phase 6 — Validate on RCM servers
+After REX completes, verify on each RCM server.
+RPM
+rpm -qa | grep m50-api-reporter
+Expected example: m50-api-reporter-3.0.0-9.el7.ubs.noarch
+Service
+systemctl status api-reporter.service
+
+Also:
+systemctl is-enabled api-reporter.service
+systemctl is-active api-reporter.service
+
+Expected:
+enabled
+active
+
+Local health check
+curl -i http://127.0.0.1:8000/health
+
+Local Reporter endpoint
+curl -i http://127.0.0.1:8000/api/reporter
+
+Through Apache/load balancer
+https://fcscmt-actone-uat-ch.appl.ubs.net/reporter/health
+and: 
+https://fcscmt-actone-uat-ch.appl.ubs.net/reporter/api/reporter
+
+Also validate the Excel endpoint.
+
+Complete release order
+1. MR approved
+2. Merge into develop
+3. Create API Reporter RPM tag from develop
+4. Build and publish Reporter RPM
+5. Confirm exact RPM version
+6. Update api_reporter_version if necessary
+7. Merge the version adjustment into develop
+8. Create the next m50-ansible tag from develop
+9. Build and publish the Ansible release
+10. Select the new Ansible release in REX
+11. Deploy with RCM limit
+12. Validate RPM, service and endpoints on RCM1 and RCM2
+
+The key principle is: release the Reporter RPM first, confirm its exact version, and only then release Ansible with an inventory that references that published RPM version
+
+
+
+
