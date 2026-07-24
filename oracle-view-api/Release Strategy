@@ -204,5 +204,15 @@ Complete release order
 The key principle is: release the Reporter RPM first, confirm its exact version, and only then release Ansible with an inventory that references that published RPM version
 
 
+Question:
 
+This is the important question to ask the team
+
+Before creating any tag yourself, verify the expected workflow:
+
+Should the Reporter RPM and Ansible releases be tagged from develop, or should they first be merged into the active release branch (e.g. rel-2.33.0) and tagged from there?
+
+This is important because your screenshot suggests the team maintains a release branch, so it's possible that official release tags are created from rel-2.33.0, not directly from develop.
+
+I recommend checking this before creating any release tags. It will ensure your release follows the same process as the rest of the project.
 
