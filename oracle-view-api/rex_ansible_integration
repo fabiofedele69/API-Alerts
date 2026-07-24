@@ -1,0 +1,12 @@
+scmt-rex-ansible/src/main/ansible/roles/rcm/tasks/packages.yml
+
+- name: Install API Reporter package
+  yum:
+    name:
+      - "m50-api-reporter-{{ api_reporter_version }}.noarch"
+    state: present
+    enablerepo: "{{ rhnwmsb_app_repo_list }}"
+    disablerepo: "*"
+    update_cache: true
+    allow_downgrade: true
+
