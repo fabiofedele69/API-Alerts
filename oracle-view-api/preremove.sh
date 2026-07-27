@@ -18,10 +18,10 @@ if [ "${1:-0}" -eq 0 ]; then
         systemctl stop "${SERVICE_NAME}" || true
         systemctl disable "${SERVICE_NAME}" || true
     fi
-
-    systemctl daemon-reload || true
 else
     echo "INFO: Upgrade detected; service will not be stopped or disabled"
 fi
+
+systemctl daemon-reload || true
 
 exit 0
