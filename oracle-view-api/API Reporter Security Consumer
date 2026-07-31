@@ -1,0 +1,97 @@
+# API Reporter – Actions Required for the Consumer
+
+To securely access the **API Reporter**, the consumer robot will authenticate using **Mutual TLS (mTLS)** with a dedicated technical user certificate.
+
+## Consumer Responsibilities
+
+### 1. Obtain a Technical User Certificate
+
+Request a client TLS certificate for the technical user:
+
+```
+t910212
+```
+
+The certificate must be issued by the internal UBS Certificate Authority (CA).
+
+The following files will be provided after the certificate request process:
+
+```
+t910212-cert.pem
+```
+
+```
+t910212-key.pem
+```
+
+> The private key (`t910212-key.pem`) must remain confidential and must never be shared or installed on the RCM server.
+
+---
+
+### 2. Install the Certificate on the Consumer Robot
+
+Install the following files on the machine where the consumer robot is executed:
+
+- `t910212-cert.pem`
+- `t910212-key.pem`
+
+The robot must have access to both files in order to establish the TLS connection.
+
+---
+
+### 3. Configure the Robot
+
+Configure the HTTP client used by the robot to:
+
+- connect using HTTPS;
+- present the client certificate (`t910212-cert.pem`);
+- present the associated private key (`t910212-key.pem`);
+- validate the server certificate using the standard trusted CA configuration.
+
+The API endpoint remains unchanged:
+
+```
+https://fcscmt-actone-uat-ch.appl.ubs.net/reporter/api/reporter
+```
+
+No username or password is required.
+
+---
+
+### 4. Connection Flow
+
+```text
+Consumer Robot
+      |
+      | HTTPS + Client Certificate
+      |
+      v
+RCM Apache HTTPD
+      |
+      | Client certificate validated
+      |
+      v
+API Reporter
+      |
+      v
+Oracle Database
+```
+
+---
+
+## What the Consumer Does NOT Need to Do
+
+The consumer does **not** need to:
+
+- modify the API endpoint;
+- send a username/password;
+- change the API request payload;
+- install any certificate on the RCM server.
+
+The only change required on the consumer side is configuring the robot to present the technical user's client certificate during the HTTPS connection.
+
+---
+
+## Expected Result
+
+Once the client certificate has been issued, installed, and configured on the consumer robot, the robot will be able to securely access the API Reporter using Mutual TLS (mTLS), while the RCM server will authenticate and authorize the request based on the technical user's certificate.
