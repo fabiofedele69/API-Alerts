@@ -1,0 +1,220 @@
+# API Reporter Security Model – End-to-End Proposal (mTLS with Technical User)
+
+## Objective
+
+Secure the **API Reporter** endpoint so that only the authorised consumer robot can access it using a **TLS client certificate** associated with the technical user **t910212**.
+
+The goal is to achieve this **without modifying the Python/FastAPI application code**.
+
+---
+
+# End-to-End Flow
+
+```text
+                    +--------------------------------------+
+                    | Consumer Robot                      |
+                    | Technical User: t910212            |
+                    |                                    |
+                    | Client Certificate (t910212-cert)  |
+                    | Private Key (t910212-key)          |
+                    +------------------+-----------------+
+                                       |
+                                       | HTTPS + Mutual TLS
+                                       |
+                                       v
+                    +--------------------------------------+
+                    | Apache HTTPD on RCM Server          |
+                    |                                    |
+                    | Validate client certificate         |
+                    | using ssl/cacerts.pem              |
+                    |                                    |
+                    | Authorise only CN=t910212          |
+                    +------------------+-----------------+
+                                       |
+                                       | Local Proxy
+                                       |
+                                       v
+                    +--------------------------------------+
+                    | FastAPI API Reporter                |
+                    | GET /reporter/api/reporter          |
+                    |                                    |
+                    | Reads Oracle View                  |
+                    | Returns JSON                       |
+                    +------------------+-----------------+
+                                       |
+                                       v
+                                 Oracle 19c
+```
+
+---
+
+# Responsibilities
+
+## Consumer Robot Server
+
+### Install
+
+The consumer robot must receive:
+
+- `t910212-cert.pem`
+- `t910212-key.pem`
+
+These are the certificate and private key associated with the technical user **t910212**.
+
+The private key **must remain only on the consumer robot**.
+
+### Configure the Robot
+
+The robot must invoke
+
+```
+https://fcscmt-actone-uat-ch.appl.ubs.net/reporter/api/reporter
+```
+
+presenting
+
+- the client certificate
+- the corresponding private key
+
+during the TLS handshake.
+
+No username/password authentication is required.
+
+---
+
+## RCM Server (Apache HTTPD)
+
+### Existing CA
+
+The existing file
+
+```
+ssl/cacerts.pem
+```
+
+contains the trusted UBS CA certificates.
+
+This file is used only to verify the certificate presented by the consumer robot.
+
+### No change to cacerts.pem
+
+The certificate
+
+```
+t910212-cert.pem
+```
+
+**must NOT be imported into**
+
+```
+ssl/cacerts.pem
+```
+
+The CA bundle must continue to contain only trusted CA certificates.
+
+---
+
+## Apache Configuration
+
+Protect only the Reporter endpoint by requiring a client certificate.
+
+Example:
+
+```apache
+<Location /reporter/>
+
+    SSLVerifyClient require
+    SSLVerifyDepth 5
+
+    <RequireAll>
+        Require ssl-verify-client
+        Require expr "%{SSL_CLIENT_S_DN_CN} == 't910212'"
+    </RequireAll>
+
+</Location>
+```
+
+This ensures that:
+
+- only a valid client certificate is accepted;
+- the certificate must be issued by the trusted CA;
+- the certificate identity must correspond to **t910212**.
+
+---
+
+# Python API Reporter
+
+No code modification is required.
+
+The application continues to expose:
+
+```
+GET /reporter/api/reporter
+```
+
+and simply returns the Oracle data.
+
+Authentication is completely handled by Apache before the request reaches FastAPI.
+
+---
+
+# Certificate Validation Process
+
+```text
+Consumer Robot
+      |
+      | presents
+      |
+      +--> t910212-cert.pem
+      +--> proves ownership of t910212-key.pem
+                    |
+                    v
+Apache HTTPD
+      |
+      | validates certificate
+      | against
+      |
+      +--> ssl/cacerts.pem
+      |
+      | checks CN = t910212
+      |
+      +--> Request accepted
+```
+
+---
+
+# Summary
+
+## Consumer Robot
+
+- Install `t910212-cert.pem`
+- Install `t910212-key.pem`
+- Configure the HTTP client to present the certificate during the HTTPS connection
+- Continue calling the existing Reporter URL
+
+---
+
+## RCM Server
+
+- Keep the existing `ssl/cacerts.pem`
+- **Do not import the technical user certificate into the CA bundle**
+- Protect `/reporter/` using `SSLVerifyClient`
+- Authorise only the certificate belonging to technical user **t910212**
+
+---
+
+## Python API Reporter
+
+- No code changes
+- No authentication logic added
+- No certificate management inside the application
+
+---
+
+# Benefits
+
+- No changes to the FastAPI application.
+- Authentication is centralized in Apache HTTPD.
+- The private key never leaves the consumer robot.
+- The RCM server trusts only certificates issued by the internal UBS CA.
+- Access to the Reporter endpoint is restricted to the authorised technical user (`t910212`).
