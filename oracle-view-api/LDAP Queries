@@ -1,0 +1,26 @@
+ldapsearch -LLL -x \
+  -H "ldap://idm-ldap-ch.ubstest.net:21389" \
+  -D "uid=FR92791,ou=Users,ou=BBS,ou=Users and Authorizations,o=ubs.net" \
+  -W \
+  -b "ou=user,ou=idm,o=ubs.net" \
+  -s sub \
+  "(uid=t774411)" \
+  dn objectClass uid cn
+
+ldapsearch -LLL -x \
+  -H "ldap://idm-ldap-ch.ubstest.net:21389" \
+  -D "uid=FR92791,ou=Users,ou=BBS,ou=Users and Authorizations,o=ubs.net" \
+  -W \
+  -b "ou=user,ou=idm,o=ubs.net" \
+  -s sub \
+  "(uid=t774411)" \
+  "*" "+"
+
+ldapsearch -LLL -x \
+  -H "ldap://idm-ldap-ch.ubstest.net:21389" \
+  -D "uid=FR92791,ou=Users,ou=BBS,ou=Users and Authorizations,o=ubs.net" \
+  -W \
+  -b "ou=entitlement,ou=idm,o=ubs.net" \
+  -s one \
+  "(objectClass=*)" \
+  dn objectClass
