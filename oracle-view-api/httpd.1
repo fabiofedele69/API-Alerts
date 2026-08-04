@@ -1,0 +1,24 @@
+<VirtualHost 10.82.29.58:443>
+
+    SSLEngine on
+
+    # Existing SSL, certificate and proxy configuration remains here
+    # ...
+
+    # Temporary client-certificate debug log
+    LogFormat "%t VERIFY=%{SSL_CLIENT_VERIFY}x CN=\"%{SSL_CLIENT_S_DN_CN}x\" DN=\"%{SSL_CLIENT_S_DN}x\" SERIAL=%{SSL_CLIENT_M_SERIAL}x \"%r\" %>s" ssl_debug
+
+    CustomLog "logs/ssl_debug.log" ssl_debug
+
+    <Location /reporter/>
+        SSLVerifyClient require
+        SSLVerifyDepth 5
+        SSLOptions +StdEnvVars
+
+        Require all granted
+    </Location>
+
+    # Other existing Location blocks
+    # ...
+
+</VirtualHost>
