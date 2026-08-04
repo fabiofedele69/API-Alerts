@@ -1,0 +1,33 @@
+<VirtualHost 10.82.29.58:443>
+
+    SSLEngine on
+
+    # Existing server certificate configuration
+    SSLCertificateFile ssl/servercert.pem
+    SSLCACertificateFile ssl/cacerts.pem
+
+    # Ask for the client certificate during the initial TLS handshake.
+    # Other application URLs can still work without one.
+    SSLVerifyClient optional
+    SSLVerifyDepth 5
+
+    # Temporary certificate debug log
+    LogFormat "%t VERIFY=%{SSL_CLIENT_VERIFY}x CN=\"%{SSL_CLIENT_S_DN_CN}x\" DN=\"%{SSL_CLIENT_S_DN}x\" SERIAL=\"%{SSL_CLIENT_M_SERIAL}x\" \"%r\" %>s" ssl_debug
+    CustomLog "logs/ssl_debug.log" ssl_debug
+
+    # Existing proxy configuration
+    ProxyPass        /reporter http://127.0.0.1:8000
+    ProxyPassReverse /reporter http://127.0.0.1:8000
+
+    <Location "/reporter/">
+        SSLOptions +StdEnvVars
+
+        <RequireAll>
+            Require ssl-verify-client
+            Require all granted
+        </RequireAll>
+    </Location>
+
+    # Other existing configuration remains unchanged
+
+</VirtualHost>
