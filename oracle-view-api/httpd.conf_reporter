@@ -1,0 +1,20 @@
+<Location "/reporter">
+
+    #
+    # Require a valid client certificate
+    #
+    SSLVerifyClient require
+    SSLVerifyDepth 5
+
+    #
+    # Only allow t910212
+    #
+    <RequireAll>
+
+        Require ssl-verify-client
+
+        Require expr "%{SSL_CLIENT_S_DN_CN} == 't910212'"
+
+    </RequireAll>
+
+</Location>
