@@ -1,0 +1,878 @@
+# API Reporter – Production OS Prerequisite
+## sudoers Configuration for Technical Account `um501001`
+
+---
+
+## 1. Purpose
+
+The API Reporter is deployed on the RCM servers as a Linux `systemd` service:
+
+```text
+api-reporter.service
+```
+
+During the deployment and validation performed in the **UAT/TE2 environment**, it was identified that the technical account:
+
+```text
+um501001
+```
+
+was not authorized to execute the privileged `systemctl` operations required to manage the API Reporter service.
+
+The issue was resolved in UAT/TE2 by introducing a restricted configuration under:
+
+```text
+/etc/sudoers.d/
+```
+
+The same OS prerequisite must therefore be implemented on the Production RCM servers before the API Reporter Production deployment.
+
+---
+
+# 2. Background
+
+The API Reporter runs as a persistent service managed by `systemd`.
+
+Typical operational commands are:
+
+```bash
+systemctl status api-reporter
+systemctl start api-reporter
+systemctl stop api-reporter
+systemctl restart api-reporter
+systemctl enable api-reporter
+```
+
+Operations such as `start`, `stop`, `restart`, and `enable` require elevated OS privileges.
+
+The deployment/operational technical account:
+
+```text
+um501001
+```
+
+does not have general root privileges and should not be granted unrestricted sudo access.
+
+A dedicated sudoers configuration is therefore required to allow the account to execute only the approved `systemctl` commands for the API Reporter service.
+
+---
+
+# 3. Justification
+
+The requirement was identified during the API Reporter deployment and testing in the **UAT/TE2 environment**.
+
+Without the dedicated sudoers configuration, the technical account cannot perform the required privileged service-management operations.
+
+This could result in a partial deployment where:
+
+```text
+RPM successfully installed
+        |
+        v
+Application files deployed
+        |
+        v
+systemctl operation attempted
+        |
+        v
+Permission denied
+        |
+        v
+api-reporter service not correctly started/restarted
+```
+
+For this reason, the Production RCM environment should be aligned with the already validated UAT/TE2 configuration before deployment.
+
+---
+
+# 4. Security Principle
+
+The requested configuration follows the **principle of least privilege**.
+
+The account:
+
+```text
+um501001
+```
+
+must NOT receive unrestricted root access.
+
+The following type of configuration must NOT be used:
+
+```text
+um501001 ALL=(ALL) NOPASSWD: ALL
+```
+
+Instead, permission must be restricted to the required operations for:
+
+```text
+api-reporter.service
+```
+
+For example:
+
+```text
+systemctl status api-reporter
+systemctl start api-reporter
+systemctl stop api-reporter
+systemctl restart api-reporter
+systemctl enable api-reporter
+```
+
+No permission to manage unrelated system services is required.
+
+---
+
+# 5. Recommended Implementation Sequence
+
+The recommended sequence is:
+
+```text
+Check existing UAT configuration
+        |
+        v
+Prepare Production sudoers configuration
+        |
+        v
+Validate sudoers syntax
+        |
+        v
+Verify um501001 permissions
+        |
+        v
+Deploy API Reporter
+        |
+        v
+Validate systemd service
+        |
+        v
+Validate API
+```
+
+The sudoers prerequisite should preferably be implemented **before the Production deployment**.
+
+---
+
+# 6. Step 1 – Check the Existing UAT/TE2 Configuration
+
+Before implementing the Production configuration, verify the configuration currently used in UAT/TE2.
+
+On the UAT/TE2 RCM server run:
+
+```bash
+sudo grep -Rni "um501001\|api-reporter" /etc/sudoers.d/
+```
+
+Alternatively:
+
+```bash
+sudo grep -Rni "um501001\|api-reporter" \
+    /etc/sudoers /etc/sudoers.d 2>/dev/null
+```
+
+Identify the sudoers file currently used for the API Reporter.
+
+For example:
+
+```text
+/etc/sudoers.d/api-reporter
+```
+
+Display the configuration:
+
+```bash
+sudo cat /etc/sudoers.d/api-reporter
+```
+
+The Production configuration should preferably reproduce the configuration already validated in UAT/TE2.
+
+---
+
+# 7. Step 2 – Connect to the Production RCM Server
+
+Connect to the Production RCM server using an administrative account authorized to modify sudoers configuration.
+
+The procedure must be performed on **each Production RCM server hosting the API Reporter**.
+
+For example:
+
+```text
+RCM1 Production
+RCM2 Production
+```
+
+---
+
+# 8. Step 3 – Verify the `systemctl` Path
+
+On the Production server run:
+
+```bash
+which systemctl
+```
+
+Expected output will normally be:
+
+```text
+/bin/systemctl
+```
+
+or:
+
+```text
+/usr/bin/systemctl
+```
+
+Use the **exact path returned by this command** in the sudoers configuration.
+
+Do not assume the path without checking it.
+
+---
+
+# 9. Step 4 – Check for Existing Production Configuration
+
+Before creating a new file, verify whether a sudoers rule already exists.
+
+Run:
+
+```bash
+sudo grep -Rni "um501001\|api-reporter" \
+    /etc/sudoers /etc/sudoers.d 2>/dev/null
+```
+
+Also check:
+
+```bash
+sudo ls -l /etc/sudoers.d/
+```
+
+If an existing API Reporter configuration is found, review it before making any modification.
+
+Avoid creating duplicate or conflicting rules.
+
+---
+
+# 10. Step 5 – Create the Dedicated sudoers File
+
+Create/edit the dedicated file using `visudo`:
+
+```bash
+sudo visudo -f /etc/sudoers.d/api-reporter
+```
+
+Assuming:
+
+```bash
+which systemctl
+```
+
+returned:
+
+```text
+/bin/systemctl
+```
+
+configure:
+
+```text
+# ============================================================
+# API Reporter service management
+# Technical account: um501001
+# ============================================================
+
+um501001 ALL=(root) NOPASSWD: /bin/systemctl status api-reporter
+um501001 ALL=(root) NOPASSWD: /bin/systemctl start api-reporter
+um501001 ALL=(root) NOPASSWD: /bin/systemctl stop api-reporter
+um501001 ALL=(root) NOPASSWD: /bin/systemctl restart api-reporter
+```
+
+If the deployment procedure requires `um501001` to enable the service, also add:
+
+```text
+um501001 ALL=(root) NOPASSWD: /bin/systemctl enable api-reporter
+```
+
+If `systemctl` is located under:
+
+```text
+/usr/bin/systemctl
+```
+
+replace `/bin/systemctl` with `/usr/bin/systemctl`.
+
+---
+
+# 11. Step 6 – Configure Ownership
+
+The sudoers file must be owned by `root`.
+
+Run:
+
+```bash
+sudo chown root:root /etc/sudoers.d/api-reporter
+```
+
+Verify:
+
+```bash
+ls -l /etc/sudoers.d/api-reporter
+```
+
+---
+
+# 12. Step 7 – Configure File Permissions
+
+Set the standard sudoers permissions:
+
+```bash
+sudo chmod 440 /etc/sudoers.d/api-reporter
+```
+
+Verify:
+
+```bash
+ls -l /etc/sudoers.d/api-reporter
+```
+
+Expected result:
+
+```text
+-r--r----- 1 root root ... /etc/sudoers.d/api-reporter
+```
+
+---
+
+# 13. Step 8 – Validate sudoers Syntax
+
+This step is **mandatory**.
+
+Run:
+
+```bash
+sudo visudo -cf /etc/sudoers.d/api-reporter
+```
+
+Expected result:
+
+```text
+/etc/sudoers.d/api-reporter: parsed OK
+```
+
+If an error is reported:
+
+```text
+DO NOT proceed with the Production deployment.
+```
+
+Correct the sudoers configuration first and repeat the validation.
+
+It is also possible to validate the complete sudoers configuration:
+
+```bash
+sudo visudo -c
+```
+
+---
+
+# 14. Step 9 – Verify Permissions Assigned to `um501001`
+
+Run:
+
+```bash
+sudo -l -U um501001
+```
+
+Verify that the expected API Reporter commands are listed.
+
+For example:
+
+```text
+/bin/systemctl status api-reporter
+/bin/systemctl start api-reporter
+/bin/systemctl stop api-reporter
+/bin/systemctl restart api-reporter
+```
+
+and, if required:
+
+```text
+/bin/systemctl enable api-reporter
+```
+
+Verify that the change has NOT introduced unrestricted access such as:
+
+```text
+NOPASSWD: ALL
+```
+
+---
+
+# 15. Step 10 – Pre-Deployment Functional Test
+
+If `api-reporter.service` already exists on the server, log in as:
+
+```text
+um501001
+```
+
+and execute:
+
+```bash
+sudo systemctl status api-reporter
+```
+
+The command should execute without requesting a sudo password and without returning an authorization error.
+
+If the API Reporter has not yet been installed, this functional validation can be performed immediately after deployment.
+
+---
+
+# 16. Step 11 – Proceed with API Reporter Deployment
+
+Once the following checks are successful:
+
+- sudoers file created;
+- ownership is `root:root`;
+- permissions are `440`;
+- `visudo` returns `parsed OK`;
+- `sudo -l -U um501001` shows the expected commands;
+
+the normal Production deployment can proceed through the approved deployment mechanism.
+
+For the API Reporter this may involve:
+
+```text
+REX
+  |
+  v
+Ansible
+  |
+  v
+RPM deployment
+  |
+  v
+systemd
+  |
+  v
+api-reporter.service
+```
+
+---
+
+# 17. Step 12 – Reload systemd if Required
+
+If the deployment installs or modifies:
+
+```text
+api-reporter.service
+```
+
+reload the systemd configuration:
+
+```bash
+sudo systemctl daemon-reload
+```
+
+This instructs systemd to reload its unit definitions.
+
+---
+
+# 18. Step 13 – Enable the API Reporter Service
+
+If required by the deployment procedure:
+
+```bash
+sudo systemctl enable api-reporter
+```
+
+Verify:
+
+```bash
+systemctl is-enabled api-reporter
+```
+
+Expected:
+
+```text
+enabled
+```
+
+If `enable` is performed automatically by the RPM/Ansible deployment, this manual step is not required.
+
+---
+
+# 19. Step 14 – Start or Restart the API Reporter
+
+Start the service if it is not running:
+
+```bash
+sudo systemctl start api-reporter
+```
+
+For an upgrade/redeployment:
+
+```bash
+sudo systemctl restart api-reporter
+```
+
+---
+
+# 20. Step 15 – Verify Service Status
+
+Run:
+
+```bash
+sudo systemctl status api-reporter
+```
+
+Expected:
+
+```text
+Active: active (running)
+```
+
+The service must not be left in states such as:
+
+```text
+inactive
+failed
+activating
+```
+
+---
+
+# 21. Step 16 – Verify the Running Process
+
+Run:
+
+```bash
+ps -ef | grep '[a]pi-reporter'
+```
+
+Confirm that the expected API Reporter process is running.
+
+---
+
+# 22. Step 17 – Verify the Listening Port
+
+If the API Reporter is configured to listen on TCP port `8000`, run:
+
+```bash
+ss -lntp | grep 8000
+```
+
+On systems where `ss` is unavailable:
+
+```bash
+netstat -lntp | grep 8000
+```
+
+The API should normally be listening on the configured local interface, for example:
+
+```text
+127.0.0.1:8000
+```
+
+---
+
+# 23. Step 18 – Check systemd Logs
+
+If the service does not start correctly, run:
+
+```bash
+journalctl -u api-reporter --no-pager -n 100
+```
+
+For additional service information:
+
+```bash
+systemctl status api-reporter -l
+```
+
+These commands should be used to identify startup/runtime errors.
+
+---
+
+# 24. Step 19 – Validate the API Locally
+
+If permitted, verify that the API responds locally from the RCM server.
+
+For example:
+
+```bash
+curl http://127.0.0.1:8000/api/reporter
+```
+
+The exact endpoint should correspond to the deployed API Reporter configuration.
+
+A successful response confirms that:
+
+```text
+systemd
+   |
+   v
+api-reporter.service
+   |
+   v
+Python / FastAPI
+   |
+   v
+Port 8000
+```
+
+is functioning correctly.
+
+---
+
+# 25. Step 20 – Validate Apache Proxy Connectivity
+
+After the local API has been validated, verify the external Apache endpoint through the approved Reporter URL.
+
+Architecture:
+
+```text
+Consumer
+    |
+    | HTTPS
+    v
+Apache httpd :443
+    |
+    | ProxyPass
+    v
+127.0.0.1:8000
+    |
+    v
+API Reporter
+```
+
+Apache security/mTLS validation is handled separately from the systemd sudoers prerequisite.
+
+---
+
+# 26. If sudoers Is Configured After Deployment
+
+The sudoers configuration can technically be implemented after deployment.
+
+However, the deployment may have already failed during a privileged `systemctl` operation.
+
+The resulting state could be:
+
+```text
+RPM installed
+     |
+     v
+Application files installed
+     |
+     v
+systemctl restart attempted
+     |
+     v
+Permission denied
+     |
+     v
+Service stopped/not restarted
+```
+
+After implementing and validating `/etc/sudoers.d/api-reporter`, complete the service setup manually.
+
+Run:
+
+```bash
+sudo systemctl daemon-reload
+```
+
+If required:
+
+```bash
+sudo systemctl enable api-reporter
+```
+
+Then:
+
+```bash
+sudo systemctl restart api-reporter
+```
+
+Finally:
+
+```bash
+sudo systemctl status api-reporter
+```
+
+Expected:
+
+```text
+Active: active (running)
+```
+
+Therefore:
+
+> **Preferred:** configure sudoers before deployment.
+
+> **Fallback:** configure sudoers after deployment and manually complete/validate the service activation.
+
+---
+
+# 27. Rollback Procedure
+
+If the sudoers change must be rolled back, first confirm that the file is dedicated exclusively to the API Reporter.
+
+Remove:
+
+```bash
+sudo rm /etc/sudoers.d/api-reporter
+```
+
+Then validate the complete sudoers configuration:
+
+```bash
+sudo visudo -c
+```
+
+Removing the sudoers file:
+
+- does not uninstall the API Reporter;
+- does not remove the RPM;
+- does not automatically stop the running service;
+- removes the additional systemctl privileges granted to `um501001`.
+
+After rollback, `um501001` should no longer be able to perform the privileged API Reporter service-management commands.
+
+---
+
+# 28. Expected Final State
+
+After successful implementation:
+
+```text
+/etc/sudoers.d/api-reporter
+```
+
+exists on each Production RCM server.
+
+The expected state is:
+
+```text
+Owner       : root
+Group       : root
+Permissions : 440
+```
+
+Validation:
+
+```bash
+sudo visudo -cf /etc/sudoers.d/api-reporter
+```
+
+returns:
+
+```text
+parsed OK
+```
+
+The technical account:
+
+```text
+um501001
+```
+
+can execute only the approved API Reporter service-management operations.
+
+The API Reporter service is:
+
+```text
+Active: active (running)
+```
+
+and:
+
+```bash
+systemctl is-enabled api-reporter
+```
+
+returns:
+
+```text
+enabled
+```
+
+---
+
+# 29. L2 Change Summary
+
+## Change
+
+Create a restricted sudoers configuration for:
+
+```text
+um501001
+```
+
+to manage:
+
+```text
+api-reporter.service
+```
+
+on the Production RCM servers.
+
+## Reason
+
+The requirement was identified during API Reporter deployment and validation in UAT/TE2.
+
+The technical account requires elevated privileges for specific `systemctl` service-management operations but must not receive general root access.
+
+Production must be aligned with the successfully validated UAT/TE2 configuration.
+
+## Scope
+
+Production RCM servers hosting the API Reporter.
+
+## Security
+
+The change follows the principle of least privilege.
+
+Only explicitly approved `systemctl` commands for `api-reporter` are permitted.
+
+No unrestricted sudo/root access is granted.
+
+## Pre-Deployment Validation
+
+```bash
+sudo visudo -cf /etc/sudoers.d/api-reporter
+sudo -l -U um501001
+```
+
+## Post-Deployment Validation
+
+```bash
+sudo systemctl status api-reporter
+systemctl is-enabled api-reporter
+ps -ef | grep '[a]pi-reporter'
+ss -lntp | grep 8000
+```
+
+## Rollback
+
+```bash
+sudo rm /etc/sudoers.d/api-reporter
+sudo visudo -c
+```
+
+---
+
+# 30. Important Recommendation
+
+Before implementing the Production configuration, compare it with the existing configuration already validated in UAT/TE2:
+
+```bash
+sudo grep -Rni "um501001\|api-reporter" /etc/sudoers.d/
+```
+
+Then display the relevant UAT/TE2 file:
+
+```bash
+sudo cat /etc/sudoers.d/<existing-api-reporter-sudoers-file>
+```
+
+The Production configuration should replicate the validated UAT/TE2 configuration wherever possible.
