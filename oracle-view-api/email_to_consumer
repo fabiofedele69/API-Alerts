@@ -1,0 +1,67 @@
+# API Reporter – Client Certificate Requirements for mTLS Connection
+
+**Subject:** API Reporter – Client Certificate Requirements for mTLS Connection
+
+Hi Team,
+
+As discussed, we are implementing **mutual TLS (mTLS) authentication** for access to the API Reporter endpoint.
+
+Based on the certificate and information provided for the virtual worker account **T910212 / VWRobot R1000413**, could you please complete/confirm the following points:
+
+- **PKI confirmation**  
+  Please confirm with the PKI team that the certificate issued to **VWRobot R1000413** by **UBS Staff Authentication CA 30** is the correct certificate/profile for **unattended machine-to-machine client authentication (mTLS)**.
+
+- **TLS Client Authentication capability**  
+  PKI should confirm that the certificate is intended and enabled for **TLS Client Authentication**.
+
+- **Private key availability**  
+  Please confirm that the machine/account executing the robot has access to the **private key associated with the client certificate**.  
+  The private key should **not be sent or shared with us**.
+
+- **Certificate location**  
+  The client certificate and its associated private key must be available to the **same Windows account/session under which the robot executes**.
+
+- **Exported `.crt` certificate**  
+  The `.crt` file previously exported from Chrome contains the **public certificate only**.  
+  The `.crt` file alone is therefore not sufficient to perform mTLS authentication.
+
+- **Windows / Schannel**  
+  We confirmed that the Windows `curl` implementation uses **Schannel**.  
+  Therefore, if the certificate and its associated private key are correctly available through the Windows Certificate Store, a separate `.key` file should not be required.
+
+- **Unattended usage**  
+  As the current private key appears to be associated with **CitrixVirtualSmartCardCsp**, please confirm with PKI that the certificate/private key can be used by the robot **non-interactively**, without certificate-selection, PIN, or other user prompts.
+
+- **CA certificate chain**  
+  Please ask PKI to confirm the complete CA chain required for this client certificate, including the appropriate **Intermediate CA(s)** and **Root CA**.
+
+  Based on the certificate information currently available, we see the following chain:
+
+  `VWRobot R1000413`  
+  → `UBS Staff Authentication CA 30`  
+  → `UBS Group Root CA`
+
+- **curl configuration**  
+  Once PKI confirms the certificate/profile and private-key usage, the robot's current `curl` command will need to be updated to explicitly use the client certificate from the Windows Certificate Store.
+
+- **End-to-end UAT test**  
+  Once the above points are confirmed, we will coordinate an end-to-end test against the **UAT API Reporter endpoint**.
+
+  On the RCM/API Reporter side, we will verify that Apache:
+  
+  - receives the client certificate;
+  - successfully validates the certificate chain;
+  - identifies the expected client certificate;
+  - authorizes the request;
+  - and forwards the request to the API Reporter.
+
+On the **API Reporter / RCM side**, we will take care of the corresponding **Apache mTLS configuration and trusted CA chain configuration**.
+
+The main confirmation required from the **Consumer / PKI side** before proceeding is therefore:
+
+> **Is the certificate assigned to T910212 / VWRobot R1000413 the appropriate certificate for unattended mTLS client authentication, and can its associated private key be used programmatically by the robot without interactive user intervention?**
+
+Once this is confirmed, we can proceed with the final UAT connectivity test.
+
+Thanks and regards,  
+Fabio
