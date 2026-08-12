@@ -18,3 +18,10 @@ curl -sS \
   -H "X-Vault-Namespace: AT35969" \
   -w "HTTP_STATUS=%{http_code}\n" \
   "https://vault.eu.eva.ubs.net/v1/${SECRET_PATH}"
+
+
+/app/M50/m50-python-3.10.15/bin/python3.10 -c \
+'from app.vault import get_vault_token; get_vault_token(); print("FA23094 EVA AUTHENTICATION SUCCESSFUL")'
+
+/app/M50/m50-python-3.10.15/bin/python3.10 -c \
+'from app.vault import get_oracle_password; p=get_oracle_password(); print("LC_SCMT_PBI PASSWORD RETRIEVAL SUCCESSFUL"); print("Password length:",len(p))'
