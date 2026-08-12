@@ -1,0 +1,20 @@
+TOKEN=$(/app/M50/m50-python-3.10.15/bin/python3.10 -c \
+'from app.vault import get_vault_token; print(get_vault_token())')
+
+echo "Token length: ${#TOKEN}"
+
+SECRET_PATH=$(grep '^vault.path=' /tmp/lc_scmt_pbi.properties | cut -d= -f2-)
+
+curl -sS \
+  -H "X-Vault-Token: $TOKEN" \
+  -H "X-Vault-Namespace: AT35969" \
+  -w "\nHTTP_STATUS=%{http_code}\n" \
+  "https://vault.eu.eva.ubs.net/v1/${SECRET_PATH}"
+
+
+  curl -sS \
+  -o /tmp/lc_scmt_pbi_eva_test.json \
+  -H "X-Vault-Token: $TOKEN" \
+  -H "X-Vault-Namespace: AT35969" \
+  -w "HTTP_STATUS=%{http_code}\n" \
+  "https://vault.eu.eva.ubs.net/v1/${SECRET_PATH}"
