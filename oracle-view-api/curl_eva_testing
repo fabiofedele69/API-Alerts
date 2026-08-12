@@ -1,0 +1,11 @@
+curl -sS \
+  --cert /app/M50/dyn/npa/certs/FA23303/FA23303.pem \
+  --key /app/M50/dyn/npa/certs/FA23303/FA23303-key.pem \
+  --cacert /app/M50/dyn/npa/certs/FA23303/cacerts.pem \
+  -H "X-Vault-Namespace: AT35969" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  -d '{"name":"fa23303"}' \
+  -o /tmp/eva_login.json \
+  -w "HTTP_STATUS=%{http_code}\n" \
+  https://vault.eu.eva.ubs.net/v1/auth/cert/login
