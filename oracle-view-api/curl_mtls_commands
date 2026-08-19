@@ -1,0 +1,3 @@
+curl.exe -vk --resolve fcscmt-actone-uat-ch.appl.ubs.net:9443:10.82.29.59 --cert "CurrentUser\MY\<THUMBPRINT>" "https://fcscmt-actone-uat-ch.appl.ubs.net:9443/reporter/api/reporter"
+
+  curl.exe -vk --resolve fcscmt-actone-uat-ch.appl.ubs.net:9443:10.82.29.58 --cert "CurrentUser\MY\<THUMBPRINT>" "https://fcscmt-actone-uat-ch.appl.ubs.net:9443/reporter/api/reporter"
