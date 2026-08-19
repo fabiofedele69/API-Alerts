@@ -1,0 +1,45 @@
+<VirtualHost 10.82.29.59:9443>
+
+    ServerName fcscmt-actone-uat-ch.appl.ubs.net
+    SSLEngine on
+
+    # ---------------------------------------------------------
+    # Server certificate and trusted client CA chain
+    # ---------------------------------------------------------
+    SSLCertificateFile ssl/servercert.pem
+    SSLCACertificateFile ssl/cacerts.pem
+
+    # ---------------------------------------------------------
+    # Require client certificate during initial TLS handshake
+    # ---------------------------------------------------------
+    SSLVerifyClient require
+    SSLVerifyDepth 5
+
+    # ---------------------------------------------------------
+    # API Reporter reverse proxy
+    # ---------------------------------------------------------
+    ProxyPass        /reporter http://127.0.0.1:8000
+    ProxyPassReverse /reporter http://127.0.0.1:8000
+
+    # ---------------------------------------------------------
+    # Dedicated mTLS logging
+    # ---------------------------------------------------------
+    LogFormat "%h %t \"%r\" %>s VERIFY=\"%{SSL_CLIENT_VERIFY}x\" CN=\"%{SSL_CLIENT_S_DN_CN}x\" SUBJECT=\"%{SSL_CLIENT_S_DN}x\" ISSUER=\"%{SSL_CLIENT_I_DN}x\" SERIAL=\"%{SSL_CLIENT_M_SERIAL}x\"" reporter_ssl
+
+    CustomLog "logs/reporter_ssl.log" reporter_ssl
+
+    <Location "/reporter/">
+
+        # Export SSL/client certificate information
+        SSLOptions +StdEnvVars
+
+        # Make client certificate CN available as authenticated user
+        SSLUserName SSL_CLIENT_S_DN_CN
+
+        # Initial mTLS test:
+        # allow any client certificate successfully verified by Apache
+        Require ssl-verify-client
+
+    </Location>
+
+</VirtualHost>
