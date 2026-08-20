@@ -1,0 +1,270 @@
+# API Reporter mTLS Test – RCM 10.82.29.59 – Native PowerShell
+
+## 1. Confirm the Windows user
+
+Run the test under the same Windows user/account that owns the client certificate.
+
+```powershell
+whoami
+```
+
+---
+
+## 2. Define the client certificate thumbprint
+
+```powershell
+$thumbprint = "474b0acd5369a1266d8a60b09474c860f7745aa0"
+```
+
+---
+
+## 3. Load the certificate from the Current User certificate store
+
+```powershell
+$cert = Get-Item "Cert:\CurrentUser\My\$thumbprint"
+```
+
+---
+
+## 4. Display the certificate
+
+```powershell
+$cert
+```
+
+Check that the Subject, Issuer and Thumbprint correspond to the expected T910212 client certificate.
+
+---
+
+## 5. Verify that the certificate has an associated private key
+
+```powershell
+$cert.HasPrivateKey
+```
+
+Expected result:
+
+```text
+True
+```
+
+If the result is `False`, stop the test because the certificate cannot be used for mTLS.
+
+---
+
+## 6. Display useful certificate information
+
+```powershell
+$cert.Subject
+```
+
+```powershell
+$cert.Issuer
+```
+
+```powershell
+$cert.Thumbprint
+```
+
+```powershell
+$cert.NotBefore
+```
+
+```powershell
+$cert.NotAfter
+```
+
+```powershell
+$cert.HasPrivateKey
+```
+
+---
+
+## 7. Temporarily bypass the VIP and map the hostname to RCM .59
+
+PowerShell must be running with sufficient privileges to modify the Windows hosts file.
+
+```powershell
+Add-Content -Path "$env:SystemRoot\System32\drivers\etc\hosts" -Value "`n10.82.29.59 fcscmt-actone-uat-ch.appl.ubs.net"
+```
+
+This temporarily maps:
+
+```text
+fcscmt-actone-uat-ch.appl.ubs.net
+        |
+        +----> 10.82.29.59
+```
+
+instead of using the normal VIP.
+
+---
+
+## 8. Clear the Windows DNS cache
+
+```powershell
+Clear-DnsClientCache
+```
+
+---
+
+## 9. Verify the hostname resolution
+
+```powershell
+Resolve-DnsName fcscmt-actone-uat-ch.appl.ubs.net
+```
+
+The test must resolve to:
+
+```text
+10.82.29.59
+```
+
+Do not continue if it still resolves to the VIP `10.82.15.221`.
+
+---
+
+## 10. Test TCP connectivity to the dedicated Reporter port
+
+```powershell
+Test-NetConnection fcscmt-actone-uat-ch.appl.ubs.net -Port 9443
+```
+
+Expected:
+
+```text
+RemoteAddress    : 10.82.29.59
+RemotePort       : 9443
+TcpTestSucceeded : True
+```
+
+---
+
+## 11. Execute the mTLS API request
+
+```powershell
+$response = Invoke-WebRequest -Uri "https://fcscmt-actone-uat-ch.appl.ubs.net:9443/reporter/api/reporter" -Certificate $cert
+```
+
+This uses the certificate and its associated private key directly from the Windows Current User certificate store.
+
+---
+
+## 12. Check the HTTP status
+
+```powershell
+$response.StatusCode
+```
+
+Expected:
+
+```text
+200
+```
+
+---
+
+## 13. Display the API Reporter JSON response
+
+```powershell
+$response.Content
+```
+
+Expected result:
+
+```text
+JSON returned by API Reporter
+```
+
+---
+
+# Expected Successful Flow
+
+```text
+T910212 certificate
+        |
+        +-- HasPrivateKey = True
+        |
+        v
+PowerShell Invoke-WebRequest
+        |
+        | HTTPS :9443
+        | Client Certificate
+        v
+10.82.29.59:9443
+        |
+        v
+Apache
+        |
+        | SSLVerifyClient require
+        |
+        +-- Certificate validation
+        |
+        +-- SSL_CLIENT_VERIFY = SUCCESS
+        |
+        v
+ProxyPass /reporter
+        |
+        v
+127.0.0.1:8000
+        |
+        v
+API Reporter
+        |
+        v
+HTTP 200 + JSON
+```
+
+---
+
+## 14. IMPORTANT – Remove the temporary hosts-file entry after the test
+
+First display the hosts file:
+
+```powershell
+Get-Content "$env:SystemRoot\System32\drivers\etc\hosts"
+```
+
+Remove the temporary line:
+
+```text
+10.82.29.59 fcscmt-actone-uat-ch.appl.ubs.net
+```
+
+Do not leave this mapping permanently because it bypasses the normal UAT VIP.
+
+After removing the entry, clear the DNS cache:
+
+```powershell
+Clear-DnsClientCache
+```
+
+Verify that normal DNS resolution has been restored:
+
+```powershell
+Resolve-DnsName fcscmt-actone-uat-ch.appl.ubs.net
+```
+
+It should again resolve through the normal UAT infrastructure rather than being forced to `10.82.29.59`.
+
+---
+
+# Server-side verification
+
+At the same time, on RCM `10.82.29.59`, monitor the dedicated Reporter SSL log:
+
+```bash
+tail -f logs/reporter_ssl.log
+```
+
+For a successful mTLS request we expect values similar to:
+
+```text
+VERIFY="SUCCESS"
+CN="..."
+SUBJECT="..."
+ISSUER="..."
+SERIAL="..."
+```
+
+The exact `CN` captured here should be used later for the final Apache CN authorization rule.
