@@ -22,3 +22,15 @@ grep -RniE \
 /app/rhel8_migration/Utilities \
 --include='*.txt' --include='*.properties' --include='*.env' \
 2>/dev/null
+
+
+if LC_ALL=C grep -q $'\r' RCM_Upgrade_Oracle_10_2.sql; then
+    echo "ERROR: carriage returns remain"
+else
+    echo "OK: Unix LF format"
+fi
+
+chmod 600 RCM_Upgrade_Oracle_10_2.sql \
+          RCM_Upgrade_Oracle_10_2.sql.crlf_backup
+
+ls -l RCM_Upgrade_Oracle_10_2.sql*
