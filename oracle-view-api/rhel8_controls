@@ -88,3 +88,14 @@ chmod 600 RCM_Upgrade_Oracle_10_2.sql \
           RCM_Upgrade_Oracle_10_2.sql.crlf_backup
 
 ls -l RCM_Upgrade_Oracle_10_2.sql*
+
+
+SELECT id, version_control_label, update_date, script_file_name
+FROM case_managment_versions
+WHERE REGEXP_LIKE(id, '^6\.4\.0\.[0-9]+$')
+ORDER BY TO_NUMBER(REGEXP_SUBSTR(id, '[0-9]+$')) DESC
+FETCH FIRST 10 ROWS ONLY;
+
+SELECT id, version_control_label, update_date, script_file_name
+FROM case_managment_versions
+WHERE id IN ('6.4.0.52', '6.4.0.87');
