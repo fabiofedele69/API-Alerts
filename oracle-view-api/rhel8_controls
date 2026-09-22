@@ -9,3 +9,16 @@ awk -F= '
 
 find /app/rhel8_migration/Utilities/lib/lib-dbupgrade \
   -maxdepth 1 -type f -name '*.jar' -printf '%f\n' | sort
+
+
+find /app/rhel8_migration/Utilities/unix \
+  -maxdepth 1 -type f \
+  \( -iname '*user*role*.sh' -o -iname '*role*.sh' \) \
+  -printf '%f\n' | sort
+
+
+grep -RniE \
+'rcm_app_user|rcm_app_read_role|tablespace_default|user_and_roles_script' \
+/app/rhel8_migration/Utilities \
+--include='*.txt' --include='*.properties' --include='*.env' \
+2>/dev/null
