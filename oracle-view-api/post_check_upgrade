@@ -1,0 +1,14 @@
+SELECT id, version_control_label, update_date, script_file_name
+FROM case_managment_versions
+WHERE id = '10.2.0.19';
+
+SELECT object_type, COUNT(*) AS invalid_count
+FROM user_objects
+WHERE status = 'INVALID'
+GROUP BY object_type
+ORDER BY object_type;
+
+SELECT owner, index_name, table_name, status
+FROM all_indexes
+WHERE owner = 'LC_RCM_INC'
+  AND index_name = 'INDX_ALERTS_DT_SCORE';
