@@ -30,6 +30,60 @@ else
     echo "OK: Unix LF format"
 fi
 
+
+
+SET LINESIZE 250
+SET PAGESIZE 1000
+SET TRIMSPOOL ON
+SET ECHO ON
+
+SPOOL P:\ActOneUpgrade\pre_upgrade_check.log
+
+PROMPT ===== DATABASE IDENTITY =====
+
+SELECT USER FROM dual;
+
+SELECT SYS_CONTEXT('USERENV','DB_NAME') AS db_name
+FROM dual;
+
+SELECT SYS_CONTEXT('USERENV','SERVICE_NAME') AS service_name
+FROM dual;
+
+SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') AS current_schema
+FROM dual;
+
+PROMPT ===== MOST RECENT INSTALLED VERSIONS =====
+
+SELECT id, version_control_label, update_date, script_file_name
+FROM case_managment_versions
+ORDER BY update_date DESC
+FETCH FIRST 20 ROWS ONLY;
+
+PROMPT ===== TARGET VERSION CHECK =====
+
+SELECT COUNT(*) AS target_version_count
+FROM case_managment_versions
+WHERE id = '10.2.0.19';
+
+PROMPT ===== INVALID OBJECT SUMMARY =====
+
+SELECT object_type, COUNT(*) AS invalid_count
+FROM user_objects
+WHERE status = 'INVALID'
+GROUP BY object_type
+ORDER BY object_type;
+
+PROMPT ===== INVALID OBJECT DETAILS =====
+
+SELECT object_name, object_type, status
+FROM user_objects
+WHERE status = 'INVALID'
+ORDER BY object_type, object_name;
+
+PROMPT ===== PRE-UPGRADE CHECK FINISHED =====
+
+SPOOL OFF
+EXIT
 chmod 600 RCM_Upgrade_Oracle_10_2.sql \
           RCM_Upgrade_Oracle_10_2.sql.crlf_backup
 
