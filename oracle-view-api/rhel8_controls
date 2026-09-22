@@ -99,3 +99,14 @@ FETCH FIRST 10 ROWS ONLY;
 SELECT id, version_control_label, update_date, script_file_name
 FROM case_managment_versions
 WHERE id IN ('6.4.0.52', '6.4.0.87');
+
+
+SELECT id, version_control_label, update_date, script_file_name
+FROM case_managment_versions
+WHERE update_date >= DATE '2026-09-01'
+ORDER BY update_date DESC, id;
+
+SELECT id, COUNT(*) AS record_count
+FROM case_managment_versions
+WHERE id IN ('6.4.0.52', '6.4.0.87')
+GROUP BY id;
