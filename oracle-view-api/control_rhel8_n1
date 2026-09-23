@@ -1,0 +1,58 @@
+1. Confirm the Tomcat version
+  
+/app/web/jws-tomcat10/tomcat/bin/version.sh
+
+2. Confirm that both Tomcat services are stopped
+
+systemctl is-active vfvb-vw-AT35959-dev-T10-FCSCMT.tomcat.service
+
+systemctl is-active vfvb-vw-AT35959-dev-T90-FCSCMT.tomcat.service
+
+ps -ef | grep -E '[o]rg\.apache\.catalina|[t]omcat'
+
+3. Inspect the exact Tomcat 10 service definition
+
+systemctl cat vfvb-vw-AT35959-dev-T10-FCSCMT.tomcat.service
+
+CATALINA_HOME
+CATALINA_BASE
+JAVA_HOME
+ExecStart
+ExecStop
+User
+Group
+
+4. Compare the working and vendor acm.ini parameter sets
+
+awk -F= '
+  /^[[:space:]]*[#;]/ {next}
+  /^[[:space:]]*$/ {next}
+  /=/ {
+    key=$1
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", key)
+    print key
+  }
+' /app/rhel8_migration/RCM/acm.ini \
+  | sort -u > /tmp/acm_working.keys
+
+echo "In working copy but not vendor baseline:"
+comm -23 /tmp/acm_working.keys /tmp/acm_vendor_10_2.keys
+
+echo "In vendor baseline but missing from working copy:"
+comm -13 /tmp/acm_working.keys /tmp/acm_vendor_10_2.keys
+
+5. Find where acm.ini is referenced
+
+grep -RniE 'acm\.ini|actimize\.repository' \
+  /app/web/dyn/tomcat/config/instances/vfvb-vw-AT35959-dev-T10-FCSCMT \
+  /app/rhel8_migration/Installer \
+  /app/rhel8_migration/RCM \
+  2>/dev/null
+
+"$JAVA_HOME/bin/jar" tf /app/rhel8_migration/RCM/RCM.war | \
+  grep -Ei '(^|/)(web\.xml|acm\.ini|context\.xml)$'
+
+6. Show the Tomcat 10 deployment directories
+find \
+  /app/web/dyn/tomcat/config/instances/vfvb-vw-AT35959-dev-T10-FCSCMT \
+  -maxdepth 4 -type d -print 2>/dev/null | sort
