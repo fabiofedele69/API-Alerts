@@ -1,0 +1,40 @@
+1. Identify the running Tomcat process
+ps -eo pid,user,lstart,args | grep '[o]rg.apache.catalina.startup.Bootstrap'
+
+systemctl status 3911244 --no-pager -l
+cat /proc/3911244/cgroup
+
+systemctl list-units --type=service --all --no-legend | \
+grep -Ei 'AT35959.*tomcat'
+
+systemctl list-unit-files --type=service --no-legend | \
+grep -Ei 'AT35959.*tomcat'
+
+2. Verify required settings without displaying secrets
+
+awk -F= '
+  /^[[:space:]]*[#;]/ {next}
+  /^[[:space:]]*$/ {next}
+  /=/ {
+    key=$1
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", key)
+
+    if (key ~ /^actimize\.bootstrap\.encryption\.iv$/ ||
+        key ~ /^actimize\.repository\.(url|type|username|password|defaultCatalog)$/) {
+      value=substr($0,index($0,"=")+1)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+      print key "=" (length(value) ? "<SET>" : "<EMPTY>")
+    }
+  }
+' /app/rhel8_migration/RCM/acm.ini
+
+3. Locate the actual runtime deployment
+
+T10_BASE=/app/web/dyn/tomcat/config/instances/vfvb-vw-AT35959-dev-T10-FCSCMT/servers/server1
+
+find "$T10_BASE" -maxdepth 5 \
+  \( -type f -o -type l \) \
+  \( -iname 'acm.ini' -o -iname 'RCM.war' -o -iname '*RCM*' \) \
+  -ls 2>/dev/null
+
+  find "$T10_BASE" -maxdepth 3 -type d -print | sort
