@@ -1,0 +1,51 @@
+/app/web/jws-tomcat10/tomcat/bin/version.sh
+
+ls -l \
+  /app/M50/dyn/RCM/acm/acm.ini \
+  /app/rhel8_migration/RCM/acm.ini \
+  "/app/rhel8_migration/Installer/image/RCM 10.2.0.19/conf/acm.ini"
+
+
+  sha256sum \
+  /app/M50/dyn/RCM/acm/acm.ini \
+  /app/rhel8_migration/RCM/acm.ini \
+  "/app/rhel8_migration/Installer/image/RCM 10.2.0.19/conf/acm.ini"
+
+
+  awk -F= '
+  /^[[:space:]]*[#;]/ {next}
+  /^[[:space:]]*$/ {next}
+  /=/ {
+    key=$1
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", key)
+    print key
+  }
+' /app/M50/dyn/RCM/acm/acm.ini | sort -u > /tmp/acm_old.keys
+
+
+  awk -F= '
+  /^[[:space:]]*[#;]/ {next}
+  /^[[:space:]]*$/ {next}
+  /=/ {
+    key=$1
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", key)
+    print key
+  }
+' "/app/rhel8_migration/Installer/image/RCM 10.2.0.19/conf/acm.ini" \
+  | sort -u > /tmp/acm_vendor_10_2.keys
+
+echo "Only in old acm.ini:"
+comm -23 /tmp/acm_old.keys /tmp/acm_vendor_10_2.keys
+
+echo "Only in vendor 10.2 acm.ini:"
+comm -13 /tmp/acm_old.keys /tmp/acm_vendor_10_2.keys
+
+grep -RniE 'vfvb-vw-AT35959-dev-T10-FCSCMT|CATALINA_BASE|jws-tomcat10' \
+  /etc/systemd/system \
+  /usr/lib/systemd/system \
+  /etc/sysconfig \
+  /app/web/jws-tomcat10 \
+  2>/dev/null | head -100
+
+systemctl list-unit-files --type=service | \
+  grep -Ei 'tomcat|actimize|actone|rcm|fcscmt'
