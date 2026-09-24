@@ -76,3 +76,7 @@ unzip -p /app/rhel8_migration/Actone_10_2_artifacts/RCM.war WEB-INF/web.xml | gr
 WAR=/app/rhel8_migration/Actone_10_2_artifacts/RCM.war
 unzip -l "$WAR" WEB-INF/web.xml
 unzip -p "$WAR" WEB-INF/web.xml | sed -n '1,90p'
+
+WAR="$PWD/RCM.war"
+unzip -l "$WAR" WEB-INF/web.xml
+unzip -p "$WAR" WEB-INF/web.xml | grep -n -A8 -B4 'actimize.ini.location'
