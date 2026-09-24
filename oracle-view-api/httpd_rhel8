@@ -39,3 +39,23 @@ grep -RniE '^[[:space:]]*(Listen|ServerName|ServerAlias)' \
 
 grep -RniE 'LoadModule.*(proxy|jk|rewrite)|ProxyPass|ProxyPassReverse|JkMount|BalancerMember|RewriteRule|SetHandler|27300|/RCM' \
   /app/web/dyn/config/instances 2>/dev/null
+
+***************************************************
+
+HOST=fcscmt-actone-dev-ch.ubsglobal-prod.msad.ubs.net
+IP=10.205.249.182
+
+curl -skI --resolve "$HOST:443:$IP" \
+  "https://$HOST/RCM/acegi/acegilogin.jsp"
+
+ps -eo pid,ppid,user,args | grep '[h]ttpd'
+
+find /app/web/dyn/config/instances -type f \
+  \( -name 'httpd.conf' -o -name '*.conf' -o -name '*.properties' \) \
+  -exec grep -HniE \
+  'LoadModule.*(proxy|jk|rewrite)|ProxyPass|ProxyPassReverse|JkMount|BalancerMember|RewriteRule|SetHandler|27300|/RCM' {} + \
+  2>/dev/null
+
+find /app/web/dyn/config/instances -type f -name 'httpd.conf' \
+  -exec grep -HniE '^[[:space:]]*(Listen|ServerName|ServerAlias|<VirtualHost)' {} + \
+  2>/dev/null
