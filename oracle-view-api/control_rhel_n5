@@ -11,3 +11,8 @@ find /app/web/dyn/tomcat/config/instances \
   -path '*/apps/RCM/*' \
   \( -name web.xml -o -name 'jakarta.annotation-api-3.0.0.jar' \) \
   -print 2>/dev/null
+
+DEPLOYED=/app/web/dyn/tomcat/config/instances/vfvb-ww-AT35959-dev-T10-FCSCMT/apps/RCM/webroot
+JAR=WEB-INF/lib/jakarta.annotation-api-3.0.0.jar
+unzip -p "$WAR" "$JAR" | sha256sum
+sha256sum "$DEPLOYED/$JAR"
