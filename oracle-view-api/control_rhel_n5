@@ -148,3 +148,20 @@ comm -23 \
   | head -60
 
 diff -qr "$RCM/webroot/WEB-INF/config" "$STAGE/WEB-INF/config" | head -60
+
+
+***************** SWITCHING ***************************
+NEXT="$RCM/webroot.next_20260924"
+test ! -e "$NEXT" && cp -r "$STAGE" "$NEXT"
+chown -R tc10usr:tcgroup "$NEXT"
+ls -ld "$NEXT" "$NEXT/WEB-INF"
+grep -n -A1 '<param-name>actimize.ini.location' "$NEXT/WEB-INF/web.xml"
+
+op tc instance stop -name vfvb-ww-AT35959-dev-T10-FCSCMT
+op tc status
+
+mv "$RCM/webroot" "$RCM/webroot.backup_20260924"
+mv "$NEXT" "$RCM/webroot"
+ls -ld "$RCM/webroot" "$RCM/webroot.backup_20260924"
+op tc instance start -name vfvb-ww-AT35959-dev-T10-FCSCMT
+op tc status
