@@ -1,0 +1,7 @@
+WAR=/app/rhel8_migration/RCM/appogg/RCM.war
+DEPLOYED=/app/web/dyn/tomcat/config/instances/vfvb-vw-AT35959-dev-T10-FCSCMT/apps/RCM/webroot
+
+unzip -p "$WAR" WEB-INF/web.xml | sha256sum
+sha256sum "$DEPLOYED/WEB-INF/web.xml"
+
+unzip -Z1 "$WAR" | grep '^WEB-INF/lib/.*\.jar$' | head -1
