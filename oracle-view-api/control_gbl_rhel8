@@ -63,3 +63,9 @@ sha256sum "$CH_LIC"
 
 runuser -u tc10usr -- test -r "$CH_LIC"
 echo "CH license readable rc=$?"
+
+
+*************************************
+id tc10usr
+namei -l /app/M50/dyn/RCM/acm/license/license.lic
+getfacl -p /app/M50/dyn/RCM/acm/license/license.lic
