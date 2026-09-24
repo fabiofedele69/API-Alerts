@@ -96,3 +96,28 @@ diff -u \
   <(sed 's/\r$//' "$RCM/webroot/WEB-INF/web.xml") \
   <(unzip -p "$WAR" WEB-INF/web.xml | sed 's/\r$//') \
   | tail -100
+
+
+
+*********************
+
+WAR=/app/rhel8_migration/Actone_10.2_artifacts/RCM.war
+STAGE=/app/rhel8_migration/Actone_10.2_artifacts/RCM_stage_CH_20260924
+
+unzip -tq "$WAR"
+mkdir "$STAGE"
+unzip -q "$WAR" -d "$STAGE"
+
+python3 - "$STAGE/WEB-INF/web.xml" <<'PY'
+from pathlib import Path
+import sys
+
+p = Path(sys.argv[1])
+old = b'${system:user.dir}/acm.ini'
+new = b'/app/M50/dyn/RCM/acm/acm.ini'
+data = p.read_bytes()
+assert data.count(old) == 1, "Expected exactly one ACM path; no change made"
+p.write_bytes(data.replace(old, new))
+PY
+
+grep -n -A2 -B1 'actimize.ini.location\|XSSFilter' "$STAGE/WEB-INF/web.xml" | head -35
