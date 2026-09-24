@@ -44,3 +44,8 @@ MANIFEST=$(find /app/web/dyn/tomcat -path '*/apps/RCM/webroot/META-INF/MANIFEST.
 grep -iE 'acm-version|Build-Jdk-Spec' "$MANIFEST"
 
 unzip -Z1 /tmp/Actone_10.2_artifacts/RCM.war | grep '^WEB-INF/classes/.*\.class$' | head -1
+
+
+CLASS=WEB-INF/classes/org/owasp/csrfguard/action/Log.class
+unzip -p /tmp/Actone_10.2_artifacts/RCM.war "$CLASS" | sha256sum
+sha256sum "${MANIFEST%/META-INF/MANIFEST.MF}/$CLASS"
