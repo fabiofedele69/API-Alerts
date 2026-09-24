@@ -64,3 +64,9 @@ RCM=/app/web/dyn/tomcat/config/instances/vfvb-ww-AT35959-dev-T10-FCSCMT/apps/RCM
 ls -la "$RCM"
 ls -ld "$RCM/webroot" "$RCM/webroot/WEB-INF"
 find "$RCM" -maxdepth 2 -type d -print
+
+
+cat "$RCM/RCM.xml"
+find "$RCM/webroot" -type l -ls
+grep -n -A8 -B4 'actimize.ini.location' "$RCM/webroot/WEB-INF/web.xml"
+unzip -p /app/rhel8_migration/Actone_10_2_artifacts/RCM.war WEB-INF/web.xml | grep -n -A8 -B4 'actimize.ini.location'
