@@ -84,3 +84,9 @@ unzip -p "$WAR" WEB-INF/web.xml | grep -n -A8 -B4 'actimize.ini.location'
 
 RCM=/app/web/dyn/tomcat/config/instances/vfvb-ww-AT35959-dev-T10-FCSCMT/apps/RCM
 diff -u "$RCM/webroot/WEB-INF/web.xml" <(unzip -p "$WAR" WEB-INF/web.xml) | head -120
+
+
+diff -u \
+  <(sed 's/\r$//' "$RCM/webroot/WEB-INF/web.xml") \
+  <(unzip -p "$WAR" WEB-INF/web.xml | sed 's/\r$//') \
+  | head -120
