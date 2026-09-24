@@ -58,3 +58,9 @@ ls -ld /app/web/dyn/tomcat/config/instances/*/servers/server1/webapps/RCM
 ls -ld /app/web/dyn/tomcat/config/instances/vfvb-ww-AT35959-dev-T10-FCSCMT/apps/RCM*
 find /app/web/dyn/tomcat/config/instances/vfvb-ww-AT35959-dev-T10-FCSCMT/apps/RCM -maxdepth 2 -type f -name 'RCM.war' -print
 grep -iE 'acm-version|Build-Jdk-Spec' /app/web/dyn/tomcat/config/instances/vfvb-ww-AT35959-dev-T10-FCSCMT/apps/RCM/webroot/META-INF/MANIFEST.MF
+
+
+RCM=/app/web/dyn/tomcat/config/instances/vfvb-ww-AT35959-dev-T10-FCSCMT/apps/RCM
+ls -la "$RCM"
+ls -ld "$RCM/webroot" "$RCM/webroot/WEB-INF"
+find "$RCM" -maxdepth 2 -type d -print
