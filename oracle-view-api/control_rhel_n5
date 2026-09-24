@@ -16,3 +16,6 @@ DEPLOYED=/app/web/dyn/tomcat/config/instances/vfvb-ww-AT35959-dev-T10-FCSCMT/app
 JAR=WEB-INF/lib/jakarta.annotation-api-3.0.0.jar
 unzip -p "$WAR" "$JAR" | sha256sum
 sha256sum "$DEPLOYED/$JAR"
+
+
+grep -iE 'version|Build-Jdk' "$DEPLOYED/META-INF/MANIFEST.MF"
