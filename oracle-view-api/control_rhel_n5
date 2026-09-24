@@ -162,6 +162,20 @@ op tc status
 
 mv "$RCM/webroot" "$RCM/webroot.backup_20260924"
 mv "$NEXT" "$RCM/webroot"
+
+
+**************************************
+
+RCM=/app/web/dyn/tomcat/config/instances/vfvb-ww-AT35959-dev-T10-FCSCMT/apps/RCM
+NEXT="$RCM/webroot.next_20260924"
+BACKUP="$RCM/webroot.backup_20260924"
+
+test -d "$NEXT" && test -d "$RCM/webroot" && test ! -e "$BACKUP" || { echo "Pre-check failed; do not move anything"; false; }
+
+mv "$RCM/webroot" "$BACKUP"
+mv "$NEXT" "$RCM/webroot"
+ls -ld "$RCM/webroot" "$BACKUP"
+grep -n -A1 '<param-name>actimize.ini.location' "$RCM/webroot/WEB-INF/web.xml"
 ls -ld "$RCM/webroot" "$RCM/webroot.backup_20260924"
 op tc instance start -name vfvb-ww-AT35959-dev-T10-FCSCMT
 op tc status
