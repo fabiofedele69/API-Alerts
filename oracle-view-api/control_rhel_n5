@@ -42,3 +42,5 @@ find /app/web/dyn/tomcat -path '*/apps/RCM/webroot/META-INF/MANIFEST.MF' -print 
 GBL
 MANIFEST=$(find /app/web/dyn/tomcat -path '*/apps/RCM/webroot/META-INF/MANIFEST.MF' -print -quit)
 grep -iE 'acm-version|Build-Jdk-Spec' "$MANIFEST"
+
+unzip -Z1 /tmp/Actone_10.2_artifacts/RCM.war | grep '^WEB-INF/classes/.*\.class$' | head -1
