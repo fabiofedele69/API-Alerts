@@ -52,3 +52,14 @@ echo "acm.ini readable rc=$?"
 
 runuser -u tc10usr -- test -r "$CH_LIC"
 echo "license readable rc=$?"
+***********************************************
+
+CH_LIC=/app/M50/dyn/RCM/acm/license/license.lic
+echo "$CH_LIC"
+
+ls -l "$CH_LIC"
+file "$CH_LIC"
+sha256sum "$CH_LIC"
+
+runuser -u tc10usr -- test -r "$CH_LIC"
+echo "CH license readable rc=$?"
