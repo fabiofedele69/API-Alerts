@@ -1,0 +1,33 @@
+1) Confirm the source WAR and checksum:
+
+WAR=/app/rhel8_migration/RCM/appogg/RCM.war
+
+ls -lh "$WAR"
+sha256sum "$WAR"
+
+2) Check the embedded product/build version:
+
+unzip -p "$WAR" META-INF/MANIFEST.MF |
+grep -iE 'version|implementation|specification|build'
+
+unzip -Z1 "$WAR" | grep 'pom.properties$'
+
+3) Confirm that it is the Tomcat 10/Jakarta-compatible package:
+
+unzip -p "$WAR" WEB-INF/web.xml | sed -n '1,20p'
+
+https://jakarta.ee/xml/ns/jakartaee
+
+zipgrep -l 'javax\.servlet' "$WAR" | head
+
+4) Confirm the configured Tomcat deployment:
+
+op tc app_show \
+-instance vfvb-vw-AT35959-dev-T10-FCSCMT \
+-name RCM \
+-parsable
+
+cat /app/web/dyn/tomcat/config/instances/vfvb-vw-AT35959-dev-T10-FCSCMT/servers/server1/conf/Catalina/localhost/RCM.xml
+
+5) Confirm the deployed webroot contains the expected application:
+
