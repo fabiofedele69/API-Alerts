@@ -138,3 +138,13 @@ p.write_bytes(data.replace(old, new))
 PY
 
 grep -n -A2 'actimize.ini.location\|XSSFilter' "$STAGE/WEB-INF/web.xml" | head -25
+
+
+******************************
+
+comm -23 \
+  <(cd "$RCM/webroot" && find . -type f | sort) \
+  <(cd "$STAGE" && find . -type f | sort) \
+  | head -60
+
+diff -qr "$RCM/webroot/WEB-INF/config" "$STAGE/WEB-INF/config" | head -60
