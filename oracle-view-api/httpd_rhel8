@@ -59,3 +59,17 @@ find /app/web/dyn/config/instances -type f \
 find /app/web/dyn/config/instances -type f -name 'httpd.conf' \
   -exec grep -HniE '^[[:space:]]*(Listen|ServerName|ServerAlias|<VirtualHost)' {} + \
   2>/dev/null
+
+
+****************************************************************************
+
+HOST=fcscmt-actone-dev-ch.ubsglobal-prod.msad.ubs.net
+
+getent ahostsv4 "$HOST"
+grep -niF "$HOST" /etc/hosts
+
+openssl s_client \
+  -connect 10.205.249.182:443 \
+  -servername "$HOST" </dev/null 2>/dev/null |
+openssl x509 -noout -subject -issuer -ext subjectAltName
+
