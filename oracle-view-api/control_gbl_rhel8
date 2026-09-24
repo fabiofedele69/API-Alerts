@@ -69,3 +69,27 @@ echo "CH license readable rc=$?"
 id tc10usr
 namei -l /app/M50/dyn/RCM/acm/license/license.lic
 getfacl -p /app/M50/dyn/RCM/acm/license/license.lic
+
+
+*****************************************************
+
+CH_LIC_DIR=/app/M50/dyn/RCM/acm/license
+CH_LIC="$CH_LIC_DIR/license.lic"
+
+setfacl -m u:tc10usr:--x "$CH_LIC_DIR"
+setfacl -m u:tc10usr:r-- "$CH_LIC"
+
+verify
+
+getfacl -p "$CH_LIC_DIR" "$CH_LIC"
+
+runuser -u tc10usr -- test -r "$CH_LIC"
+echo "CH license readable rc=$?"
+
+restart
+
+op tc instance_stop -name vfvb-ww-AT35959-dev-T10-FCSCMT
+op tc status
+
+op tc instance_start -name vfvb-ww-AT35959-dev-T10-FCSCMT
+op tc status
