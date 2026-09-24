@@ -5,3 +5,9 @@ unzip -p "$WAR" WEB-INF/web.xml | sha256sum
 sha256sum "$DEPLOYED/WEB-INF/web.xml"
 
 unzip -Z1 "$WAR" | grep '^WEB-INF/lib/.*\.jar$' | head -1
+
+
+find /app/web/dyn/tomcat/config/instances \
+  -path '*/apps/RCM/*' \
+  \( -name web.xml -o -name 'jakarta.annotation-api-3.0.0.jar' \) \
+  -print 2>/dev/null
