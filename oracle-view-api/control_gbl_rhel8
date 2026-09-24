@@ -93,3 +93,6 @@ op tc status
 
 op tc instance_start -name vfvb-ww-AT35959-dev-T10-FCSCMT
 op tc status
+
+grep -nEi 'licenseDetails|license|exception|error' \
+  /app/web/dyn/tomcat/config/instances/vfvb-ww-AT35959-dev-T10-FCSCMT/logs/* 2>/dev/null | tail -80
