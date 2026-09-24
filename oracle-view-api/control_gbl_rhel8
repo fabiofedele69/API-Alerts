@@ -45,3 +45,10 @@ file "$CH_LIC"
 stat -c '%n | size=%s | owner=%U:%G | mode=%a | modified=%y' \
   "$CH_ACM" "$CH_LIC"
 sha256sum "$CH_ACM" "$CH_LIC"
+
+
+runuser -u tc10usr -- test -r "$CH_ACM"
+echo "acm.ini readable rc=$?"
+
+runuser -u tc10usr -- test -r "$CH_LIC"
+echo "license readable rc=$?"
