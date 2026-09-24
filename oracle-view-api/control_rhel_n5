@@ -35,3 +35,5 @@ The application is not yet operational: startup fails during license initializat
 find /app -type f -name 'RCM.war' -exec sha256sum {} + 2>/dev/null
 
 unzip -p /tmp/Actone_10.2_artifacts/RCM.war META-INF/MANIFEST.MF | grep -iE 'acm-version|Build-Jdk-Spec'
+
+find /app/web/dyn/tomcat -path '*/apps/RCM/webroot/META-INF/MANIFEST.MF' -print 2>/dev/null
