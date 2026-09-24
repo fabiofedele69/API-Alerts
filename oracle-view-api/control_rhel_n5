@@ -121,3 +121,20 @@ p.write_bytes(data.replace(old, new))
 PY
 
 grep -n -A2 -B1 'actimize.ini.location\|XSSFilter' "$STAGE/WEB-INF/web.xml" | head -35
+
+
+*************************
+
+python3 - "$STAGE/WEB-INF/web.xml" <<'PY'
+from pathlib import Path
+import sys
+
+p = Path(sys.argv[1])
+old = b'${system:user.dir}/acm.ini'
+new = b'/app/M50/dyn/RCM/acm/acm.ini'
+data = p.read_bytes()
+assert data.count(old) == 1, "Expected exactly one ACM path; no change made"
+p.write_bytes(data.replace(old, new))
+PY
+
+grep -n -A2 'actimize.ini.location\|XSSFilter' "$STAGE/WEB-INF/web.xml" | head -25
