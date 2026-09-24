@@ -30,3 +30,6 @@ RCM DEV migration update
 RCM 10.2.0.19 is deployed on the RHEL8 server under Tomcat 10.1. We verified the deployed manifest, matched a deployed JAR against the source WAR, and confirmed that Tomcat’s /RCM path points to the deployed directory.
 
 The application is not yet operational: startup fails during license initialization. We still need to determine why the license details are unavailable, including whether the vendor license covers the new server.
+
+
+find /app -type f -name 'RCM.war' -exec sha256sum {} + 2>/dev/null
