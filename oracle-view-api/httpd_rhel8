@@ -20,3 +20,22 @@ grep -RniE 'ProxyPass|ProxyPassReverse|JkMount|BalancerMember|/RCM|27100' \
 </VirtualHost>
 
 cp -p "$APCONF" "${APCONF}.bak_$(date +%Y%m%d_%H%M%S)"
+
+******************************************
+
+APBASE=/app/web/dyn/config/instances/vfvb-ww-AT35959-dev-T90-apache
+WSBASE=/app/web/dyn/config/instances/vfvb-ww-AT35959-dev-T90-apacheWS
+
+grep -RniE 'LoadModule.*(proxy|jk|rewrite)|ProxyPass|ProxyPassReverse|JkMount|BalancerMember|RewriteRule|SetHandler|27100|/RCM' \
+  "$APBASE/conf" "$WSBASE/conf" 2>/dev/null
+
+grep -RniE '^[[:space:]]*Include(Optional)?' \
+  "$APBASE/conf" "$WSBASE/conf" 2>/dev/null
+
+grep -nA30 -B5 '<VirtualHost' "$APBASE/conf/httpd.conf"
+
+grep -RniE '^[[:space:]]*(Listen|ServerName|ServerAlias)' \
+  "$APBASE/conf" "$WSBASE/conf" 2>/dev/null
+
+grep -RniE 'LoadModule.*(proxy|jk|rewrite)|ProxyPass|ProxyPassReverse|JkMount|BalancerMember|RewriteRule|SetHandler|27300|/RCM' \
+  /app/web/dyn/config/instances 2>/dev/null
