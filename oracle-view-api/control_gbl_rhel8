@@ -1,0 +1,2 @@
+grep -n -A1 '<param-name>actimize.ini.location' \
+/app/web/dyn/tomcat/config/instances/hay-ww-AT31964-tel-T10-SCMT/apps/RCM/webroot/WEB-INF/web.xml
