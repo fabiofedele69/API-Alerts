@@ -1,0 +1,22 @@
+ps -eo pid,ppid,user,args | grep '[h]ttpd'
+
+APCONF=/app/web/dyn/config/instances/vfvb-ww-AT35959-dev-T90-apache/conf/httpd.conf
+
+grep -nE '^[[:space:]]*(Include|IncludeOptional|LoadModule|<VirtualHost|ServerName)|proxy_module|proxy_http_module|ProxyPass|ProxyPassReverse|JkMount|BalancerMember|/RCM|27100' \
+  "$APCONF"
+
+grep -RniE 'ProxyPass|ProxyPassReverse|JkMount|BalancerMember|/RCM|27100' \
+  /app/web/dyn/config/instances/vfvb-ww-AT35959-dev-T90-apache 2>/dev/null
+
+  <VirtualHost 10.205.249.182:443>
+    ServerName fcscmt-actone-dev-ch.ubsglobal-prod.msad.ubs.net
+
+    SSLEngine on
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+    ProxyPreserveHost On
+    ProxyPass        /RCM http://127.0.0.1:27100/RCM
+    ProxyPassReverse /RCM http://127.0.0.1:27100/RCM
+</VirtualHost>
+
+cp -p "$APCONF" "${APCONF}.bak_$(date +%Y%m%d_%H%M%S)"
