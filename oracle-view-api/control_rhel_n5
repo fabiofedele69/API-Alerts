@@ -179,3 +179,15 @@ grep -n -A1 '<param-name>actimize.ini.location' "$RCM/webroot/WEB-INF/web.xml"
 ls -ld "$RCM/webroot" "$RCM/webroot.backup_20260924"
 op tc instance start -name vfvb-ww-AT35959-dev-T10-FCSCMT
 op tc status
+
+
+
+**********************************
+
+WAR=/app/rhel8_migration/Actone_10.2_artifacts/RCM.war
+STAGE=/app/rhel8_migration/Actone_10.2_artifacts/RCM_stage_CH_20260924
+RCM=/app/web/dyn/tomcat/config/instances/vfvb-ww-AT35959-dev-T10-FCSCMT/apps/RCM
+
+sha256sum "$WAR"
+diff -qr "$STAGE" "$RCM/webroot"
+sha256sum "$RCM/webroot/META-INF/MANIFEST.MF"
