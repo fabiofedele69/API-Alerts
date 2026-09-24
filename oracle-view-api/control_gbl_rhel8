@@ -9,3 +9,13 @@ grep -n -A1 '<param-name>actimize.ini.location' 'PASTE_EXACT_PATH_HERE'
 
 readlink -f /proc/2555481/cwd
 ls -l /proc/2555481/cwd/acm.ini
+
+
+ls -ld /app/M50/dyn/m50-rcm-base/acm
+ls -l /app/M50/dyn/m50-rcm-base/acm/acm.ini
+
+find /app/M50/dyn/m50-rcm-base/acm -maxdepth 2 -type f \
+  \( -name '*.lic' -o -iname '*license*' \) \
+  -printf '%p  %s bytes  %u:%g  %m\n'
+
+grep -nEi 'license|\.lic' /app/M50/dyn/m50-rcm-base/acm/acm.ini
