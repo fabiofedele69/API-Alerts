@@ -1,2 +1,7 @@
 grep -n -A1 '<param-name>actimize.ini.location' \
 /app/web/dyn/tomcat/config/instances/hay-ww-AT31964-tel-T10-SCMT/apps/RCM/webroot/WEB-INF/web.xml
+
+find /app/web/dyn/tomcat/config/instances \
+  -path '*/apps/RCM/webroot/WEB-INF/web.xml' -print 2>/dev/null
+
+grep -n -A1 '<param-name>actimize.ini.location' 'PASTE_EXACT_PATH_HERE'
