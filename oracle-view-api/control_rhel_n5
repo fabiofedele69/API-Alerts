@@ -49,3 +49,7 @@ unzip -Z1 /tmp/Actone_10.2_artifacts/RCM.war | grep '^WEB-INF/classes/.*\.class$
 CLASS=WEB-INF/classes/org/owasp/csrfguard/action/Log.class
 unzip -p /tmp/Actone_10.2_artifacts/RCM.war "$CLASS" | sha256sum
 sha256sum "${MANIFEST%/META-INF/MANIFEST.MF}/$CLASS"
+
+
+sha256sum /app/rhel8_migration/Actone_10_2_artifacts/RCM.war
+ls -ld /app/web/dyn/tomcat/config/instances/*/servers/server1/webapps/RCM
