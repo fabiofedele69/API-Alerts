@@ -19,3 +19,29 @@ find /app/M50/dyn/m50-rcm-base/acm -maxdepth 2 -type f \
   -printf '%p  %s bytes  %u:%g  %m\n'
 
 grep -nEi 'license|\.lic' /app/M50/dyn/m50-rcm-base/acm/acm.ini
+
+******************************************************************
+On Global, collect safe metadata:
+
+GLOBAL_ACM=/app/M50/dyn/m50-rcm-base/acm/acm.ini
+GLOBAL_LIC=/app/M50/dyn/m50-rcm-base/acm/license/license.lic
+
+ls -l "$GLOBAL_ACM" "$GLOBAL_LIC"
+stat -c '%n | size=%s | owner=%U:%G | mode=%a | modified=%y' \
+  "$GLOBAL_ACM" "$GLOBAL_LIC"
+sha256sum "$GLOBAL_ACM" "$GLOBAL_LIC"
+
+*************************
+
+CH_ACM=/app/M50/dyn/RCM/acm/acm.ini
+
+ls -l "$CH_ACM"
+grep -nEi '^[[:space:]]*actimize\.license[[:space:]]*=' "$CH_ACM"
+
+CH_LIC=/the/path/returned/by/grep
+
+ls -l "$CH_LIC"
+file "$CH_LIC"
+stat -c '%n | size=%s | owner=%U:%G | mode=%a | modified=%y' \
+  "$CH_ACM" "$CH_LIC"
+sha256sum "$CH_ACM" "$CH_LIC"
