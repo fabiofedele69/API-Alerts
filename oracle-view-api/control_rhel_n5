@@ -19,3 +19,7 @@ sha256sum "$DEPLOYED/$JAR"
 
 
 grep -iE 'version|Build-Jdk' "$DEPLOYED/META-INF/MANIFEST.MF"
+
+
+readlink -f "${DEPLOYED%/apps/RCM/webroot}/servers/server1/webapps/RCM"
+readlink -f "$DEPLOYED"
