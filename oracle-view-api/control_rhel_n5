@@ -90,3 +90,9 @@ diff -u \
   <(sed 's/\r$//' "$RCM/webroot/WEB-INF/web.xml") \
   <(unzip -p "$WAR" WEB-INF/web.xml | sed 's/\r$//') \
   | head -120
+
+
+diff -u \
+  <(sed 's/\r$//' "$RCM/webroot/WEB-INF/web.xml") \
+  <(unzip -p "$WAR" WEB-INF/web.xml | sed 's/\r$//') \
+  | tail -100
